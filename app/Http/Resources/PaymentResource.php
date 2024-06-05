@@ -16,10 +16,10 @@ class PaymentResource extends JsonResource
     {
         return [
             'status' => $this->status,
-            'boleto_url' => $this->boleto_url,
-            'amount' => $this->amount,
-            'payer_name' => $this->payer_name,
-            'due_date' => $this->due_date,
+            'invoiceUrl' => $this->invoiceUrl,
+            'value' => $this->value,
+            'pixTransaction' => $this->pixTransaction,
+            'dueDate' => $this->dueDate,
             // Adicione outros campos conforme necessário
         ];
     }

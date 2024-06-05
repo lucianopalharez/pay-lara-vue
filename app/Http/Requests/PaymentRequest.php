@@ -37,7 +37,7 @@ class PaymentRequest extends FormRequest
                 'creditCardNumber' => 'required|credit_card',
                 'expiryMonth' => 'required|digits:2',
                 'expiryYear' => 'required|digits:4',
-                'ccv' => 'required|digits:3',                
+                'cvv' => 'required|digits:3',                
             ]);
         }
 

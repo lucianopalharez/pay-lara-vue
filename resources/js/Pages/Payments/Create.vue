@@ -26,7 +26,7 @@
             <option :value="null">Ano</option>
             <option v-for="ano in years" :key="ano" :value="ano">{{ ano }}</option>
           </select-input>          
-          <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.ccv" :error="form.errors.ccv" class="pb-8 pr-6 w-full lg:w-2/12" label="CVV" />
+          <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.cvv" :error="form.errors.cvv" class="pb-8 pr-6 w-full lg:w-2/12" label="CVV" />
         
 
           <text-input v-model="form.name" :error="form.errors.name" class="pb-8 pr-6 w-full lg:w-1/2" :label="form.billingType === 'CREDIT_CARD' ? 'Nome do titular impresso' : 'Nome Completo'" />
@@ -77,7 +77,7 @@ export default {
         creditCardNumber: '',
         expiryMonth: '',
         expiryYear: '',
-        ccv:'',
+        cvv:'',
         billingType: null,
         email: '',
         phone: '',

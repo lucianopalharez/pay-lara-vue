@@ -33,16 +33,16 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->app->bind(PaymentGatewayInterface::class, function ($app, $parameters) {
-            $type = $parameters['type'] ?? null;
+            $type = $parameters['billingType'] ?? null;
         
             if (!$type) {
                 throw new \InvalidArgumentException("Tipo não fornecido");
             }
         
             $allowedTypes = [
-                'bill' => 'App\\Services\\BillGatewayService',
-                'pix' => 'App\\Services\\PixGatewayService',
-                'card' => 'App\\Services\\CardGatewayService',
+                'BOLETO' => 'App\\Services\\BillGatewayService',
+                'PIX' => 'App\\Services\\PixGatewayService',
+                'CREDIT_CARD' => 'App\\Services\\CardGatewayService',
             ];
         
             if (!array_key_exists($type, $allowedTypes)) {

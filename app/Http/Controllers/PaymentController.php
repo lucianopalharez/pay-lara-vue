@@ -39,26 +39,18 @@ class PaymentController extends Controller
 
     public function store(PaymentRequest $request): JsonResponse
     {
-        if ($request->fails()) {
-            // Há erros de validação
-            return response()->json($request->errors(), 400); // Retorna os erros em JSON
-        }
-        
-        return response()->json(['teste']);
+        $request->validated();
 
         try {
-            //code...
+            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
+            $response = $paymentGateway->process($request->all());
+            
+            //return response()->json(['message' => $response], 500); 
+
+            return response()->json(new PaymentResource((object)$response));
         } catch (\Exception $e) {
-            //throw $th;
+            return response()->json(['message' => $e->getMessage()], 500); 
         }
-        $data = $request->validated();
-
-        $gatewayType = $request['type'];
-
-        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['type' => $gatewayType]);
-        $paymentGateway->process($request->all());
-
-        return response()->json(new PaymentResource((object)$response));
     }
 
     public function create(): Response
