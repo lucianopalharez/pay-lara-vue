@@ -6,8 +6,7 @@ use Illuminate\Http\Request as RequestCustom;
 use App\Http\Requests\PaymentRequest;
 use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Http\JsonResponse;
-use App\Http\Resources\PaymentResource;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
@@ -16,7 +15,7 @@ use App\Enums\BillingTypeEnum;
 
 class PaymentController extends Controller
 {
-    public function index(): Response
+    public function index(): InertiaResponse
     {
         return Inertia::render('Payments/Index', [
             'filters' => Request::all('search'),
@@ -37,26 +36,21 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(PaymentRequest $request): JsonResponse
+    public function store(PaymentRequest $request): InertiaResponse
     {
         $request->validated();
 
-        try {
-            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
-            $response = $paymentGateway->process($request->all());
-            
-            //return response()->json(['message' => $response], 500); 
+        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
+        $response = $paymentGateway->process($request->all());
 
-            return response()->json(new PaymentResource((object)$response));
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500); 
-        }
+        return Inertia::render('Payments/Result', $response);
     }
 
-    public function create(): Response
+    public function create(): InertiaResponse
     {
         return Inertia::render('Payments/Create', [
             'billingTypes' => BillingTypeEnum::values(),
+            'user' => \Auth::user()
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class PaymentResource extends JsonResource
 {
@@ -19,8 +20,9 @@ class PaymentResource extends JsonResource
             'invoiceUrl' => $this->invoiceUrl,
             'value' => $this->value,
             'pixTransaction' => $this->pixTransaction,
-            'dueDate' => $this->dueDate,
-            // Adicione outros campos conforme necessário
+            'dueDate' => Carbon::createFromFormat('Y-m-d', $this->dueDate)->format('d/m/Y'),
+            'billingType' => $this->billingType,
+            'invoiceNumber' => $this->invoiceNumber
         ];
     }
 }

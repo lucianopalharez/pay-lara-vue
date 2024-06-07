@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Head title="Create Contact" />
+    <Head title="Realizar Pagamento" />
     <h1 class="mb-8 text-3xl font-bold">
       <Link class="text-indigo-400 hover:text-indigo-600" href="/payments">Realizar Pagamento</Link>
       <span class="text-indigo-400 font-medium"></span> 
@@ -10,7 +10,7 @@
         <div class="flex flex-wrap -mb-8 -mr-6 p-8">
           <currency-input v-model="form.value" :options="{ currency: 'BRL' }" :error="form.errors.value" class="pb-8 pr-6 w-full lg:w-3/12" label="Valor R$" />
 
-          <select-input v-model="form.billingType" :error="form.errors.billingType" class="pb-8 pr-6 w-full lg:w-9/12" label="Meio Pagamento">
+          <select-input v-model="form.billingType" onselect="" :error="form.errors.billingType" class="pb-8 pr-6 w-full lg:w-9/12" label="Meio Pagamento" @change="changeBillType">
             <option :value="null">Selecione o Meio de Pagamento</option>
             <option v-for="billingType in billingTypes" :key="billingType" :value="billingType">{{ billingType }}</option>
           </select-input>
@@ -29,7 +29,7 @@
           <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.cvv" :error="form.errors.cvv" class="pb-8 pr-6 w-full lg:w-2/12" label="CVV" />
         
 
-          <text-input v-model="form.name" :error="form.errors.name" class="pb-8 pr-6 w-full lg:w-1/2" :label="form.billingType === 'CREDIT_CARD' ? 'Nome do titular impresso' : 'Nome Completo'" />
+          <text-input :disabled="form.billingType !== 'CREDIT_CARD'"  v-model="form.name" :error="form.errors.name" class="pb-8 pr-6 w-full lg:w-1/2" :label="form.billingType === 'CREDIT_CARD' ? 'Nome do titular impresso' : 'Nome Completo'" />
           <text-input v-model="form.cpfCnpj" :error="form.errors.cpfCnpj" class="pb-8 pr-6 w-full lg:w-1/2" label="CPF ou CNPJ" />
           
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" label="Telefone" />
@@ -66,6 +66,7 @@ export default {
   layout: Layout,
   props: {
     billingTypes: Array,
+    user: Object
   },
   remember: 'form',
   data() {
@@ -73,7 +74,7 @@ export default {
       years: [],
       form: this.$inertia.form({
         description:'',
-        name: '',
+        name: this.customer,
         creditCardNumber: '',
         expiryMonth: '',
         expiryYear: '',
@@ -85,7 +86,7 @@ export default {
         addressNumber: '',
         mobilePhone: '',
         postalCode: '',
-        cpfCnpj: '',
+        cpfCnpj: '45658451458',
         value:''
       }),
     }
@@ -100,20 +101,36 @@ export default {
     endYear() {
       return this.currentYear + 10;
     },
+    customer() {
+      return this.user.first_name + ' ' + this.user.last_name;
+    }
   },
   created() {
     for (let year = this.startYear; year <= this.endYear; year++) {
       this.years.push(year);
     }
+    this.form.name = this.customer;
   },
   methods: {
     store() {
       this.form.post('/payments', {
         headers: {
           "Accept": "application/json",
+        },
+        onSuccess: (page) => {
+          console.log('Request was successful:', page.props);
+        },
+        onError: (errors) => {
+          console.error('Request failed:', errors);
         }
       });
     },
+    changeBillType() {
+      if (this.form.billingType !== 'CREDIT_CARD') {
+        this.form.name = this.customer;    
+      }
+    }
   },
+
 }
 </script>
