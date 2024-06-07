@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
 use App\Http\Resources\PaymentResource;
+use App\Models\User;
 
 class GatewayService
 {
@@ -25,11 +26,13 @@ class GatewayService
     /**
      * Pega codigo do cliente do gateway de pagamento.
      *
+     * @param  int $userId
      * @return string
      */
-    public function getCustomer(): string 
+    public function getCustomer(int $userId): string 
     {
-        $customerId = \Auth::user()->customer;        
+        $user = User::find($userId);
+        $customerId = $user->customer;       
         
         if (empty($customerId) === true) {
 

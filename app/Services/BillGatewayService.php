@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
 use App\Http\Resources\PaymentResource;
 use App\Services\GatewayService;
+use GuzzleHttp\Psr7\Uri;
 
 class BillGatewayService extends GatewayService implements PaymentGatewayInterface
 {
@@ -33,12 +34,16 @@ class BillGatewayService extends GatewayService implements PaymentGatewayInterfa
             $today = Carbon::now();
             $dueDate = $today->addDays(15);
     
-            $body['customer'] = $this->getCustomer();
+            $body['customer'] = $this->getCustomer($body['userId']);
             $body['dueDate'] = $dueDate;
+
+            dd(env('BILL_API_URL'));
+
+            $url = new Uri($this->ApiUrl);
 
             $process = $this->http->request(
                 'POST', 
-                $this->ApiUrl, 
+                $url, 
                 [
                     'body' => json_encode($body),
                     'headers' => [

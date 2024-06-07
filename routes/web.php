@@ -89,3 +89,4 @@ Route::get('payments/create', [PaymentController::class, 'create'])
 Route::post('payments', [PaymentController::class, 'store'])
     ->name('payments.store')
     ->middleware('auth');
+

@@ -90,7 +90,8 @@ export default {
         mobilePhone: '',
         postalCode: '',
         cpfCnpj: '202.416.790-01',
-        value:''
+        value:'',
+        userId:''
       }),
     }
   },
@@ -113,17 +114,20 @@ export default {
       this.years.push(year);
     }
     this.form.name = this.customer;
+    this.form.userId = this.user.id;
   },
   methods: {
     store() {
-      this.form.post('/payments', {
+      this.form.post('/api/gateway-payments/generate', {
         headers: {
           "Accept": "application/json",
         },
         onSuccess: (page) => {
+          console.log('this.form',page);
           console.log('Request was successful:', page.props);
         },
         onError: (errors) => {
+          console.log('this.form',this.form);
           console.error('Request failed:', errors);
         }
       });
