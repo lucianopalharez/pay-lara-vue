@@ -17,4 +17,5 @@ Homestead.yaml
 npm-debug.log
 /.idea
 /.vscode
-/storage/framework/cache
+/storage/framework/cache/*
+/bootstrap/cache/*

@@ -647,7 +647,6 @@
       20 => 'Illuminate\\Validation\\ValidationServiceProvider',
       21 => 'Illuminate\\View\\ViewServiceProvider',
       22 => 'App\\Providers\\AppServiceProvider',
-      23 => 'App\\Providers\\RouteServiceProvider',
     ),
     'aliases' => 
     array (
