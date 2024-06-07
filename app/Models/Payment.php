@@ -9,6 +9,22 @@ class Payment extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'user_id',
+        'invoiceNumber',
+        'bankSlipUrl',
+        'invoiceUrl',
+        'externalReference',
+        'description',
+        'status',
+        'pixTransaction',
+        'canBePaidAfterDueDate',
+        'billingType',
+        'value',
+        'dueDate',
+        'paymentCreated'
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

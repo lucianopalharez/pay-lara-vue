@@ -17,7 +17,8 @@
 
           <text-input v-model="form.description" :error="form.errors.description" class="pb-8 pr-6 w-full lg:w-full" label="Descrição do pagamento" />
           
-          <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.creditCardNumber" :error="form.errors.creditCardNumber" class="pb-8 pr-6 w-full lg:w-1/2" label="Numero do Cartão" />
+          <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.creditCardNumber" :error="form.errors.creditCardNumber" class="pb-8 pr-6 w-full lg:w-1/2" label="Numero do Cartão" 
+          v-mask="['####.####.####.####']"/>
           <select-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.expiryMonth" :error="form.errors.expiryMonth" class="pb-8 pr-6 w-full lg:w-2/12" label="Mês">
             <option :value="null">Mês</option>
             <option v-for="month in 12" :key="month" :value="month">{{ month }}</option>
@@ -26,15 +27,15 @@
             <option :value="null">Ano</option>
             <option v-for="ano in years" :key="ano" :value="ano">{{ ano }}</option>
           </select-input>          
-          <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.cvv" :error="form.errors.cvv" class="pb-8 pr-6 w-full lg:w-2/12" label="CVV" />
+          <text-input v-if="form.billingType === 'CREDIT_CARD'" v-model="form.cvv" :error="form.errors.cvv" class="pb-8 pr-6 w-full lg:w-2/12" label="CVV" v-mask="['###']" type="number"/>
         
 
           <text-input :disabled="form.billingType !== 'CREDIT_CARD'"  v-model="form.name" :error="form.errors.name" class="pb-8 pr-6 w-full lg:w-1/2" :label="form.billingType === 'CREDIT_CARD' ? 'Nome do titular impresso' : 'Nome Completo'" />
-          <text-input v-model="form.cpfCnpj" :error="form.errors.cpfCnpj" class="pb-8 pr-6 w-full lg:w-1/2" label="CPF ou CNPJ" />
+          <text-input v-model="form.cpfCnpj" :error="form.errors.cpfCnpj" class="pb-8 pr-6 w-full lg:w-1/2" label="CPF ou CNPJ" v-mask="['###.###.###-##', '##.###.###/####-##']" />
           
-          <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" label="Telefone" />
+          <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" label="Telefone" v-mask="['(##) ####-####', '(##) #####-####']" type="tel" />
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/2" label="Email" />  
-          <text-input v-model="form.postalCode" :error="form.errors.postalCode" class="pb-8 pr-6 w-full lg:w-4/12" label="CEP" />        
+          <text-input v-model="form.postalCode" :error="form.errors.postalCode" class="pb-8 pr-6 w-full lg:w-4/12" label="CEP" v-mask="['#####-###']" />        
           <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-8/12" label="Endereço" />
           
         </div>
@@ -53,8 +54,10 @@ import TextInput from '@/Shared/TextInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 import CurrencyInput from '@/Shared/CurrencyInput.vue'
+import {mask} from 'vue-the-mask'
 
 export default {
+  directives: {mask},
   components: {
     Head,
     Link,
@@ -86,7 +89,7 @@ export default {
         addressNumber: '',
         mobilePhone: '',
         postalCode: '',
-        cpfCnpj: '45658451458',
+        cpfCnpj: '202.416.790-01',
         value:''
       }),
     }
@@ -124,6 +127,10 @@ export default {
           console.error('Request failed:', errors);
         }
       });
+    },
+    formatCpfCnpj(event) {
+      console.log('Tecla pressionada:', event.key);
+      // Aqui você pode adicionar a lógica que desejar
     },
     changeBillType() {
       if (this.form.billingType !== 'CREDIT_CARD') {

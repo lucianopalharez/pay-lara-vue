@@ -55,7 +55,7 @@ class User extends Authenticatable
 
     public function payments(): HasMany
     {
-        return $this->hasMany(Payment::class, 'user_id','id');
+        return $this->hasMany(Payment::class);
     }
 
     public function getNameAttribute()

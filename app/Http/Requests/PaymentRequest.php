@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\CpfCnpjRule;
+use App\Rules\CreditCardRule;
 
 class PaymentRequest extends FormRequest
 {
@@ -28,16 +29,19 @@ class PaymentRequest extends FormRequest
             'value' => 'required|numeric|min:1',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'cpfCnpj' => ['required','numeric',new CpfCnpjRule],
-            'postalCode' => 'nullable|numeric|digits:8',
+            'cpfCnpj' => ['required', new CpfCnpjRule],
         ];
 
         if ($this->request->get('billingType') === 'CREDIT_CARD') {
             $rules = array_merge($rules, [
-                'creditCardNumber' => 'required|credit_card',
+                'creditCardNumber' => ['required', new CreditCardRule],
                 'expiryMonth' => 'required|digits:2',
                 'expiryYear' => 'required|digits:4',
-                'cvv' => 'required|digits:3',                
+                'cvv' => 'required|digits:3',
+                'phone' => 'required',
+                'address' => 'required', 
+                'addressNumber' => 'required', 
+                'postalCode' => 'required',               
             ]);
         }
 
@@ -71,6 +75,10 @@ class PaymentRequest extends FormRequest
             'cpfCnpj.numeric' => 'O cpf ou cnpj deve conter apenas numeros',
             'postalCode.numeric' => 'O cep deve conter apenas numeros',
             'postalCode.digits' => 'Digite um cep válido',
-        ];
+            'phone.required' => 'Digite o telefone',
+            'address.required' => 'Digite o endereço',
+            'addressNumber.required' => 'Digite o numero do endereço',
+            'postalCode.required' => 'Digite um cep válido',
+        ]; 
     }
 }

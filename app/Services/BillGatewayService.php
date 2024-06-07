@@ -8,21 +8,18 @@ use GuzzleHttp\Client;
 use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
 use App\Http\Resources\PaymentResource;
+use App\Services\GatewayService;
 
-class BillGatewayService implements PaymentGatewayInterface
+class BillGatewayService extends GatewayService implements PaymentGatewayInterface
 {
-    private $ApiUrl;
-    private $apiToken;
-    private $http;
 
-    public function __construct()
-    {
-        $this->ApiUrl = env('BILL_API_URL');
-        $this->apiToken = env('API_TOKEN');
-        $this->http = new \GuzzleHttp\Client();
-    }
-
-    public function process(array $body)
+    /**
+     * Faz requisição no gateway de pagamento para gerar pagamento.
+     *
+     * @param  array  $body
+     * @return array
+     */
+    public function process(array $body): array
     {
         $response = [
             'success' => false,
@@ -53,9 +50,11 @@ class BillGatewayService implements PaymentGatewayInterface
             );
 
             $processBody = json_decode((string) $process->getBody(), true);
-            $processBodyResource = new PaymentResource((object) $processBody);
+            $response['dataToSave'] = $this->prepareResponseToColumnsTable($processBody);
 
-            $response['data'] = $processBodyResource;
+            $processBodyResource = new PaymentResource((object) $processBody);            
+
+            $response['data'] = $processBodyResource;            
             $response['success'] = true;
             $response['status'] = $process->getStatusCode();
             $response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar o boleto e concluir o pagamento.';
@@ -71,14 +70,4 @@ class BillGatewayService implements PaymentGatewayInterface
         return $response;
     }
 
-    public function getCustomer(): string 
-    {
-        $customerId = \Auth::user()->customer;
-
-        if (empty($customerId) === true) {
-           
-        }
-
-        return $customerId;
-    }
 }

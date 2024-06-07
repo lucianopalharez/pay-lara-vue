@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request as RequestCustom;
 use App\Http\Requests\PaymentRequest;
-use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Http\JsonResponse;
 use Inertia\Response as InertiaResponse;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +11,9 @@ use Inertia\Inertia;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Request;
 use App\Enums\BillingTypeEnum;
+use App\Http\Controllers\Api\GatewayAsaasController;
+use App\Models\Payment;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -36,12 +38,31 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(PaymentRequest $request): InertiaResponse
+    /**
+     * Gera pagamento e salva no banco de dados.
+     *
+     * @param  PaymentRequest  $request
+     * @param  GatewayAsaasController $gateway
+     * @return InertiaResponse
+     */
+    public function store(PaymentRequest $request, GatewayAsaasController $apiGateway): InertiaResponse
     {
         $request->validated();
 
-        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
-        $response = $paymentGateway->process($request->all());
+        $response = $apiGateway->generatePayment($request->all());
+        $canSaveDB = $response['success'];
+
+        if ($canSaveDB === true) {
+            try {
+                DB::beginTransaction();
+
+                \Auth::user()->payments()->create($response['dataToSave']);               
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+            }
+        }
 
         return Inertia::render('Payments/Result', $response);
     }

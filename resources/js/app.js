@@ -1,6 +1,7 @@
 import '../css/app.css'
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
+import VueTheMask from 'vue-the-mask'
 
 createInertiaApp({
   resolve: name => {
@@ -10,7 +11,7 @@ createInertiaApp({
   title: title => title ? `${title} - Pagamentos` : 'Pagamentos',
   setup({ el, App, props, plugin }) {
     createApp({ render: () => h(App, props) })
-      .use(plugin)
+      .use(plugin, VueTheMask)
       .mount(el)
   },
 })
