@@ -38,6 +38,14 @@ Gere uma chave da aplicação:
 php artisan key:generate
 ```
 
+```sh
+php artisan config:clear && php artisan view:clear  && php artisan route:clear
+```
+
+```sh
+php artisan config:cache && php artisan view:cache  && php artisan route:cache
+```
+
 Crie as tabelas do banco de dados:
 
 ```sh
