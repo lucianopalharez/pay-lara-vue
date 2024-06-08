@@ -18,7 +18,7 @@ class AsassGatewayService implements PaymentGatewayInterface
 
     protected $response = [
         'success' => false,
-        'status' => 401,
+        'status' => 400,
         'data' => null,
         'message' => '',
         'user' => null
@@ -52,12 +52,8 @@ class AsassGatewayService implements PaymentGatewayInterface
             $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar e concluir o pagamento.';
 
         } catch (\GuzzleHttp\Exception\RequestException $e) {
-            if ($e->hasResponse()) {
-                $this->response['status'] = $e->getResponse()->getStatusCode();
-                $this->response['message'] = "Erro inesperado!";
-            } else {
-                $this->response['message'] = "Erro desconhecido!";
-            }
+            $this->response['error'] = $e;
+            $this->response['message'] = "Desculpe, encontramos um erro inesperado para processar este pagamento. \n\nPor favor tente novamente mais tarde e tenha certeza de que os dados informados estão corretos.";
         }
 
         return $this->response;

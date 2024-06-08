@@ -22,7 +22,7 @@ class PaymentController extends Controller
         return Inertia::render('Payments/Index', [
             'filters' => Request::all('search'),
             'payments' => \Auth::user()->payments()
-                ->orderBy('paymentCreated','desc')
+                ->orderBy('created_at','desc')
                 ->filter(Request::only('search'))
                 ->paginate(10)
                 ->withQueryString()
@@ -31,7 +31,7 @@ class PaymentController extends Controller
                     'user' => $payment->user->first_name,
                     'billingType' => $payment->billingType,
                     'value' => $payment->value,
-                    'paymentCreated' => $payment->paymentCreated,
+                    'created' => $payment->created_at_formatted,
                     'dueDate' => $payment->dueDate,
                     'status' => $payment->status,
                     'invoiceNumber' => $payment->invoiceNumber,
@@ -73,6 +73,5 @@ class PaymentController extends Controller
             'user' => \Auth::user(),
         ]);
     }   
-    
-    
+
 }

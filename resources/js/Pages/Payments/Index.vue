@@ -17,6 +17,7 @@
           <th class="pb-4 pt-6 px-6">Valor</th>
           <th class="pb-4 pt-6 px-6">Meio Pagamento</th>
           <th class="pb-4 pt-6 px-6">Status</th>
+          <th class="pb-4 pt-6 px-6">Data</th>
           <th class="pb-4 pt-6 px-6">Pagar</th>
         </tr>
         <tr v-for="payment in payments.data" :key="payment.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
@@ -31,6 +32,9 @@
           </td>
           <td class="border-t">
             {{ payment.status }}
+          </td>
+          <td class="border-t">
+            {{ payment.created }}
           </td>
           <td class="w-px border-t">
             <a class="bg-blue-500 text-white flex items-center px-4" target="_blank" :href="payment.invoiceUrl" tabindex="-1">

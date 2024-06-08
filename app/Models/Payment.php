@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class Payment extends Model
 {
@@ -31,6 +32,13 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Filtros de pagamento.
+     *
+     * @param  mixed  $query
+     * @param  array  $filters
+     * @return mixed
+     */
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {
@@ -40,5 +48,16 @@ class Payment extends Model
                     ->orWhere('billingType', 'like', '%'.$search.'%');
             });
         });
+    }
+
+    /**
+     * Pegar data formatada.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getCreatedAtFormattedAttribute($value)
+    {
+        return Carbon::parse($this->created_at)->format('d/m/Y H:i');
     }
 }

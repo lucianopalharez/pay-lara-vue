@@ -48,4 +48,6 @@ class GatewayPaymentController extends Controller
 
         return Inertia::render($page, $response);
     }
+
+
 }
