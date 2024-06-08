@@ -2,6 +2,8 @@
 
 Uma aplicação simples de demonstração de Laravel + Vite para um sistema de pagamentos de Boleto, Pix e Cartão
 
+![print](public/images/print.png)
+
 ## Instalação
 
 Clone o repositório:
