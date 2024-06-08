@@ -12,6 +12,12 @@
         <div :class="isUrl('payments') ? 'text-white' : 'text-indigo-300 group-hover:text-white'">Pagamentos</div>
       </Link>
     </div>
+    <div class="mb-4">
+      <Link class="group flex items-center py-3" href="/payments/create">
+        <icon name="office" class="mr-2 w-4 h-4" :class="isUrl('/payments/create') ? 'fill-white' : 'fill-indigo-400 group-hover:fill-white'" />
+        <div :class="isUrl('/payments/create') ? 'text-white' : 'text-indigo-300 group-hover:text-white'">Pagar</div>
+      </Link>
+    </div>
 
   </div>
 </template>

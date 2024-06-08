@@ -4,12 +4,12 @@ namespace App\Services;
 
 use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Http;
-use GuzzleHttp\Client;
 use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
 use App\Models\User;
+use App\Http\Resources\AsassPaymentResource;
 
-class GatewayService
+class AsassGatewayService
 {
     protected $ApiUrl;
     protected $apiToken;
@@ -32,6 +32,35 @@ class GatewayService
         $this->apiToken = env('API_TOKEN');
         $this->pixAddressKey = env('PIX_ADDRESS');
         $this->http = new \GuzzleHttp\Client();
+    }
+
+    /**
+     * Faz requisição no gateway de pagamento para gerar pagamento.
+     *
+     * @param  array  $body
+     * @return array
+     */
+    public function process(array $body): array
+    {       
+        try {
+            $body = $this->handleSend($body);
+            $processBody = $this->send($body);         
+
+            $processBodyResource = new AsassPaymentResource((object) $processBody);    
+
+            $this->response['data'] = $processBodyResource;       
+            $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar e concluir o pagamento.';
+
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            if ($e->hasResponse()) {
+                $this->response['status'] = $e->getResponse()->getStatusCode();
+                $this->response['message'] = "Erro inesperado!";
+            } else {
+                $this->response['message'] = "Erro desconhecido!";
+            }
+        }
+
+        return $this->response;
     }
 
     /**
@@ -107,4 +136,39 @@ class GatewayService
 
         return json_decode((string) $process->getBody(), true);
     }
+
+    /**
+     * Trata os dados antes de enviar.
+     *
+     * @param  array $body
+     * @return array
+     */
+    private function handleSend($body): array
+    {
+        if ($body['billingType'] == BillingTypeEnum::CREDIT_CARD) {
+            $body['billingType'] = 'UNDEFINED';
+
+            $body['creditCard'] = [
+                'holderName' => $body['name'],
+                'number' => $body['creditCardNumber'],
+                'expiryMonth' => $body['expiryMonth'],
+                'expireYear' => $body['expiryYear'],
+                'cvv' => $body['cvv']                
+            ];
+
+            $body['creditCardHolderInfo'] = [
+                'name' => $body['name'],
+                'email' => $body['email'],
+                'cpfCnpj' => $body['cpfCnpj'],
+                'portalCode' => $body['postalCode'],
+                'addressNumber' => $body['addressNumber'],
+                'phone' => $body['phone']                                 
+            ];
+
+            $body['remoteIp'] = $body['ip'];
+        }
+
+        return $body;
+    }
+
 }

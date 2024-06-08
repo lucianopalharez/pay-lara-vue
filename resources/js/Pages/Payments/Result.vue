@@ -2,7 +2,7 @@
     <div>
       <Head title="Realizar Pagamento" />
       <h1 class="mb-8 text-3xl font-bold">
-        <Link class="text-indigo-400 hover:text-indigo-600" href="/payments" >Pedido Aguardando Pagamento</Link>
+        <Link class="text-indigo-400 hover:text-indigo-600" href="/payments" >Pedido de Pagamento - {{ this.data.data.billingType == 'CREDIT_CARD' ? 'CARTÃO DE CRÉDITO' : this.data.data.billingType }}</Link>
         <span class="text-indigo-400 font-medium"></span> 
       </h1>
 
@@ -20,13 +20,13 @@
         
       </div>
       <p class="text-gray-700 mb-8">{{ this.message }}</p>
-
+<!--
       <img v-if="this.data.data.billingType == 'PIX' && this.data.data.encodedImage"
           :src="this.base64" 
           alt="Pagamento"
           class="mx-auto"
         />
-
+-->
 
       <a 
         :href="this.data.data.invoiceUrl" 
@@ -34,7 +34,16 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        Pagar Cobrança
+        <strong v-if="this.data.data.billingType == 'PIX'">
+          Clique para pagar com QRCODE ou copia e cola
+        </strong> 
+        <strong v-if="this.data.data.billingType == 'BOLETO'">
+          Visualizar BOLETO
+        </strong> 
+        <strong v-else>
+          Pagar Cobrança
+        </strong> 
+
       </a>
     </div>
   </div>
@@ -67,7 +76,7 @@
     },
     mounted() {
 
-      this.base64 = 'data:image/jpeg;charset=utf-8;base64,' + this.data.data.encodedImage;
+      //this.base64 = 'data:image/jpeg;charset=utf-8;base64,' + this.data.data.encodedImage;
 
       axios.post('/payments', this.data.data)
       .then(function (response) {

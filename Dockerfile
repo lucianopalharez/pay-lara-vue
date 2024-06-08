@@ -28,8 +28,9 @@ COPY . /var/www
 # Set appropriate permissions
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache \
-    && chown -R www-data:www-data /var/www/storage/logs
+    && chmod -R 755 /var/www/bootstrap \
+    && chown -R www-data:www-data /var/www/storage/logs \
+    && chmod 777 -R /var/www
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000

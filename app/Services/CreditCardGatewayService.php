@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Http;
 use App\Enums\BillingTypeEnum;
-use App\Http\Resources\CreditCardPaymentResource;
+use App\Http\Resources\PaymentResource;
 use App\Services\GatewayService;
 
 class CreditCardGatewayService extends GatewayService implements PaymentGatewayInterface
@@ -42,7 +42,7 @@ class CreditCardGatewayService extends GatewayService implements PaymentGatewayI
 
             $processBody = $this->send($body);
 
-            $processBodyResource = new CreditCardPaymentResource((object) $processBody);            
+            $processBodyResource = new PaymentResource((object) $processBody);            
 
             $this->response['data'] = $processBodyResource;          
             $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar o boleto e concluir o pagamento.';

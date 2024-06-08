@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Request;
 use App\Enums\BillingTypeEnum;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\DomCrawler\Crawler;
 
 class PaymentController extends Controller
 {
@@ -65,12 +66,13 @@ class PaymentController extends Controller
         return response()->json(['data' => 'pagamento salvo!'], 200);
     }
 
-    public function create(): InertiaResponse
+    public function create()
     {
         return Inertia::render('Payments/Create', [
             'billingTypes' => BillingTypeEnum::values(),
             'user' => \Auth::user(),
         ]);
-    }
-
+    }   
+    
+    
 }

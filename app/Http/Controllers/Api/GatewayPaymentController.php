@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Illuminate\Validation\ValidationException;
 use App\Enums\BillingTypeEnum;
+use App\Services\AsassGatewayService;
 
 class GatewayPaymentController extends Controller
 {
@@ -27,7 +28,7 @@ class GatewayPaymentController extends Controller
         try {
             $request->validated();
 
-            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
+            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => 'ASASS']);
             $response = $paymentGateway->process($request->all());
 
         } catch (ValidationException $e) {
