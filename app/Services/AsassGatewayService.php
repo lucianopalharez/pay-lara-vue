@@ -9,7 +9,7 @@ use App\Enums\BillingTypeEnum;
 use App\Models\User;
 use App\Http\Resources\AsassPaymentResource;
 
-class AsassGatewayService
+class AsassGatewayService implements PaymentGatewayInterface
 {
     protected $ApiUrl;
     protected $apiToken;
@@ -143,7 +143,7 @@ class AsassGatewayService
      * @param  array $body
      * @return array
      */
-    private function handleSend($body): array
+    public function handleSend($body): array
     {
         if ($body['billingType'] == BillingTypeEnum::CREDIT_CARD) {
             $body['billingType'] = 'UNDEFINED';
