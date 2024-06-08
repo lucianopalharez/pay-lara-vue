@@ -35,8 +35,9 @@
           
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" label="Telefone" v-mask="['(##) ####-####', '(##) #####-####']" type="tel" />
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/2" label="Email" />  
-          <text-input v-model="form.postalCode" :error="form.errors.postalCode" class="pb-8 pr-6 w-full lg:w-4/12" label="CEP" v-mask="['#####-###']" />        
-          <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-8/12" label="Endereço" />
+          <text-input v-model="form.postalCode" :error="form.errors.postalCode" class="pb-8 pr-6 w-full lg:w-3/12" label="CEP" v-mask="['#####-###']" />        
+          <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-7/12" label="Endereço" />
+          <text-input v-model="form.addressNumber" :error="form.errors.addressNumber" class="pb-8 pr-6 w-full lg:w-2/12" label="Numero" />
           
         </div>
         <div class="flex items-center justify-end px-8 py-4 bg-gray-50 border-t border-gray-100">
@@ -48,7 +49,7 @@
 </template>
 
 <script>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import TextInput from '@/Shared/TextInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
@@ -69,29 +70,31 @@ export default {
   layout: Layout,
   props: {
     billingTypes: Array,
-    user: Object
+    user: Object,
+    errors: Object
   },
   remember: 'form',
   data() {
     return {
       years: [],
       form: this.$inertia.form({
-        description:'',
+        description:'teste',
         name: this.customer,
-        creditCardNumber: '',
-        expiryMonth: '',
-        expiryYear: '',
-        cvv:'',
+        creditCardNumber: '5184.0197.4037.3151',
+        expiryMonth: '12',
+        expiryYear: '2029',
+        cvv:'159',
         billingType: null,
-        email: '',
-        phone: '',
-        address: '',
-        addressNumber: '',
+        email: 'leonardo@gmail.com',
+        phone: '(64)99278-7569',
+        address: ' rua dois',
+        addressNumber: '0',
         mobilePhone: '',
-        postalCode: '',
+        postalCode: '11458-895',
         cpfCnpj: '202.416.790-01',
-        value:'',
-        userId:''
+        value:'58',
+        userId:'',
+        ip:''
       }),
     }
   },
@@ -115,6 +118,12 @@ export default {
     }
     this.form.name = this.customer;
     this.form.userId = this.user.id;
+
+    fetch('https://api.ipify.org?format=json')
+    .then(x => x.json())
+    .then(({ ip }) => {
+        this.form.ip
+    });
   },
   methods: {
     store() {
@@ -123,8 +132,22 @@ export default {
           "Accept": "application/json",
         },
         onSuccess: (page) => {
-          console.log('this.form',page);
-          console.log('Request was successful:', page.props);
+          /*const formSave = this.$inertia.form();
+
+          this.form.post('/payments', {
+            headers: {
+              "Accept": "application/json",
+            },
+            onSuccess: (page) => {
+              console.log('this.form',page);
+              console.log('Request was successful:', page.props);
+              console.log('this.errors',this.errors);
+            },
+            onError: (errors) => {
+              console.log('this.form',this.form);
+              console.error('Request failed:', errors);
+            }
+          });*/
         },
         onError: (errors) => {
           console.log('this.form',this.form);

@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
             $allowedTypes = [
                 'BOLETO' => 'App\\Services\\BillGatewayService',
                 'PIX' => 'App\\Services\\PixGatewayService',
-                'CREDIT_CARD' => 'App\\Services\\CardGatewayService',
+                'CREDIT_CARD' => 'App\\Services\\CreditCardGatewayService',
             ];
         
             if (!array_key_exists($type, $allowedTypes)) {

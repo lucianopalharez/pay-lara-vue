@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
 use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
-use App\Http\Resources\BillPaymentResource;
+use App\Http\Resources\CreditCardPaymentResource;
 use App\Services\GatewayService;
 use GuzzleHttp\Psr7\Uri;
 use App\Models\User;
 
-class BillGatewayService extends GatewayService implements PaymentGatewayInterface
+class CreditCardGatewayService extends GatewayService implements PaymentGatewayInterface
 {
 
     /**
@@ -32,8 +32,28 @@ class BillGatewayService extends GatewayService implements PaymentGatewayInterfa
         ];
 
         try {
-            $response['user'] = User::find($body['userId']);         
-            
+            $body['billingType'] = 'UNDEFINED';
+
+            $body['creditCard'] = [
+                'holderName' => $body['name'],
+                'number' => $body['creditCardNumber'],
+                'expiryMonth' => $body['expiryMonth'],
+                'expireYear' => $body['expiryYear'],
+                'cvv' => $body['cvv']                
+            ];
+
+            $body['creditCardHolderInfo'] = [
+                'name' => $body['name'],
+                'email' => $body['email'],
+                'cpfCnpj' => $body['cpfCnpj'],
+                'portalCode' => $body['postalCode'],
+                'addressNumber' => $body['addressNumber'],
+                'phone' => $body['phone']                                 
+            ];
+
+            $body['remoteIp'] = '154.485.548.58';
+
+            $response['user'] = User::find($body['userId']);       
             $body['customer'] = $this->getCustomer($response['user']->customer);
 
             $today = Carbon::now();
@@ -56,16 +76,17 @@ class BillGatewayService extends GatewayService implements PaymentGatewayInterfa
 
             $processBody = json_decode((string) $process->getBody(), true);
 
-            $processBodyResource = new BillPaymentResource((object) $processBody);            
+            $processBodyResource = new CreditCardPaymentResource((object) $processBody);            
 
             $response['data'] = $processBodyResource;            
             $response['success'] = true;
             $response['status'] = $process->getStatusCode();
             $response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar o boleto e concluir o pagamento.';
         } catch (\GuzzleHttp\Exception\RequestException $e) {
+            dd($e);
             if ($e->hasResponse()) {
                 $response['status'] = $e->getResponse()->getStatusCode();
-                $response['message'] = "Erro inesperado!";
+                $response['message'] = $e;
             } else {
                 $response['message'] = "Erro desconhecido!";
             }
@@ -73,5 +94,4 @@ class BillGatewayService extends GatewayService implements PaymentGatewayInterfa
 
         return $response;
     }
-
 }

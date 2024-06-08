@@ -2,7 +2,7 @@
     <div>
       <Head title="Realizar Pagamento" />
       <h1 class="mb-8 text-3xl font-bold">
-        <Link class="text-indigo-400 hover:text-indigo-600" href="/payments">Pedido Aguardando Pagamento</Link>
+        <Link class="text-indigo-400 hover:text-indigo-600" href="/payments" >Pedido Aguardando Pagamento</Link>
         <span class="text-indigo-400 font-medium"></span> 
       </h1>
 
@@ -13,7 +13,9 @@
         <p><strong>Número do Pedido:</strong> {{ this.data.data.invoiceNumber }}</p>
         <p><strong>Valor:</strong> R$ {{ this.data.data.value }}</p>
         <p><strong>Meio de Pagamento:</strong> {{ this.data.data.billingType }}</p>
-        <p><strong>Data de Vencimento do Boleto:</strong> {{ this.data.data.dueDate }}</p>
+        <p v-if="this.data.data.billingType == 'BOLETO'">
+          <strong>Data de Vencimento do Boleto:</strong> {{ this.data.data.dueDateFormated }}
+        </p>
         
         
       </div>
@@ -24,7 +26,7 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        Pagar Boleto
+        Pagar Cobrança
       </a>
     </div>
   </div>
@@ -49,8 +51,27 @@
       message: String,
       user: Object
     },
-    created() {
-      console.log(this.data)
+    mounted() {
+     
+      fetch('/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Outros cabeçalhos, se necessário
+        },
+        body: this.data.data // Seus dados no formato JSON
+      })
+      .then(response => {
+        console.log('then',response)
+        if (!response.ok) {
+          
+          throw new Error('Erro ao processar a solicitação');
+        }
+        return response.json(); // Retorna os dados da resposta no formato JSON
+      })
+      .catch(error => {
+        console.error('Ocorreu um erro:', error);
+      }); 
     }
   }
   </script>

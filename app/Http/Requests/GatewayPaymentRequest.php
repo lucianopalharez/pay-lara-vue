@@ -9,6 +9,8 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Illuminate\Validation\ValidationException;
+
 class GatewayPaymentRequest extends FormRequest
 {
     /**
@@ -29,7 +31,20 @@ class GatewayPaymentRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-       throw new HttpResponseException(response()->json(['errors' => $validator->errors()], 422));
+        return false;
+        
+        if ($this->expectsJson()) {
+            $response = response()->json(['errors' => $validator->errors()], 422);
+        } else {
+            $response = Inertia::render('Payments/Create', [
+                'errors' => $validator->errors()->toArray(),
+                'input' => $this->all(),
+            ]);
+        }
+
+        //dd($response);
+
+        throw new ValidationException($validator, $response);
       
     }
     /**
@@ -45,7 +60,8 @@ class GatewayPaymentRequest extends FormRequest
             'value' => 'required|numeric|min:1',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'cpfCnpj' => ['required', new CpfCnpjRule]
+            'cpfCnpj' => ['required', new CpfCnpjRule],
+            'ip' => 'nullable'
         ];
 
         if ($this->request->get('billingType') === 'CREDIT_CARD') {

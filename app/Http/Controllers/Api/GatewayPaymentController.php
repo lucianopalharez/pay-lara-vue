@@ -8,6 +8,8 @@ use App\Http\Requests\GatewayPaymentRequest;
 use App\Contracts\PaymentGatewayInterface;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Illuminate\Validation\ValidationException;
+use App\Enums\BillingTypeEnum;
 
 class GatewayPaymentController extends Controller
 {
@@ -19,11 +21,30 @@ class GatewayPaymentController extends Controller
      */
     public function generate(GatewayPaymentRequest $request): InertiaResponse
     {
-        $request->validated();
+        $response = [];
+        $page = 'Payments/Result';
 
-        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
-        $response = $paymentGateway->process($request->all());
+        try {
+            $request->validated();
 
-        return Inertia::render('Payments/Result', $response);
+            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['billingType' => $request['billingType']]);
+            $response = $paymentGateway->process($request->all());
+
+        } catch (ValidationException $e) {
+            
+            $errors = array_map(function($item) {
+                return $item[0];
+            }, $e->errors());
+
+            $page = 'Payments/Create';
+            $response = [
+                'billingTypes' => BillingTypeEnum::values(),
+                'user' => \Auth::user(),
+                'errors' => $errors,
+                'input' => $request->all(),
+            ];
+        }      
+
+        return Inertia::render($page, $response);
     }
 }

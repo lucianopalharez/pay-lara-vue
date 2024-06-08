@@ -11,7 +11,6 @@ use Inertia\Inertia;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Request;
 use App\Enums\BillingTypeEnum;
-use App\Http\Controllers\Api\GatewayAsaasController;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
@@ -45,33 +44,30 @@ class PaymentController extends Controller
      * @param  GatewayAsaasController $gateway
      * @return InertiaResponse
      */
-    public function store(PaymentRequest $request, GatewayAsaasController $apiGateway): InertiaResponse
+    public function store(PaymentRequest $request)
     {
-        $request->validated();
+        try {
+            $request->validated();
+            
+            DB::beginTransaction();
 
-        $response = $apiGateway->generatePayment($request->all());
-        $canSaveDB = $response['success'];
+            \Auth::user()->payments()->create($request->except('dueDateFormated'));               
 
-        if ($canSaveDB === true) {
-            try {
-                DB::beginTransaction();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-                \Auth::user()->payments()->create($response['dataToSave']);               
-
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-            }
-        }
-
-        return Inertia::render('Payments/Result', $response);
+            return response()->json(['error' => $e->getMessage()], 402);
+        }  
+        
+        return response()->json(['data' => 'pagamento salvo!'], 200);
     }
 
     public function create(): InertiaResponse
     {
         return Inertia::render('Payments/Create', [
             'billingTypes' => BillingTypeEnum::values(),
-            'user' => \Auth::user()
+            'user' => \Auth::user(),
         ]);
     }
 
