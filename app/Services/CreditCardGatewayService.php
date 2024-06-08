@@ -4,17 +4,12 @@ namespace App\Services;
 
 use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Http;
-use GuzzleHttp\Client;
-use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
 use App\Http\Resources\CreditCardPaymentResource;
 use App\Services\GatewayService;
-use GuzzleHttp\Psr7\Uri;
-use App\Models\User;
 
 class CreditCardGatewayService extends GatewayService implements PaymentGatewayInterface
 {
-
     /**
      * Faz requisição no gateway de pagamento para gerar pagamento.
      *
@@ -23,14 +18,6 @@ class CreditCardGatewayService extends GatewayService implements PaymentGatewayI
      */
     public function process(array $body): array
     {       
-        $response = [
-            'success' => false,
-            'status' => 401,
-            'data' => null,
-            'message' => '',
-            'user' => null
-        ];
-
         try {
             $body['billingType'] = 'UNDEFINED';
 
@@ -51,47 +38,24 @@ class CreditCardGatewayService extends GatewayService implements PaymentGatewayI
                 'phone' => $body['phone']                                 
             ];
 
-            $body['remoteIp'] = '154.485.548.58';
+            $body['remoteIp'] = $body['ip'];
 
-            $response['user'] = User::find($body['userId']);       
-            $body['customer'] = $this->getCustomer($response['user']->customer);
-
-            $today = Carbon::now();
-            $body['dueDate'] = $today->addDays(15);
-
-            $url = new Uri($this->ApiUrl);
-
-            $process = $this->http->request(
-                'POST', 
-                $url, 
-                [
-                    'body' => json_encode($body),
-                    'headers' => [
-                        'accept' => 'application/json',
-                        'access_token' => $this->apiToken,
-                        'content-type' => 'application/json',
-                    ],
-                ]
-            );
-
-            $processBody = json_decode((string) $process->getBody(), true);
+            $processBody = $this->send($body);
 
             $processBodyResource = new CreditCardPaymentResource((object) $processBody);            
 
-            $response['data'] = $processBodyResource;            
-            $response['success'] = true;
-            $response['status'] = $process->getStatusCode();
-            $response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar o boleto e concluir o pagamento.';
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            dd($e);
+            $this->response['data'] = $processBodyResource;          
+            $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar o boleto e concluir o pagamento.';
+
+        } catch (\GuzzleHttp\Exception\RequestException $e) {        
             if ($e->hasResponse()) {
-                $response['status'] = $e->getResponse()->getStatusCode();
-                $response['message'] = $e;
+                $this->response['status'] = $e->getResponse()->getStatusCode();
+                $this->response['message'] = $e;
             } else {
-                $response['message'] = "Erro desconhecido!";
+                $this->response['message'] = "Erro desconhecido!";
             }
         }
 
-        return $response;
+        return $this->response;
     }
 }

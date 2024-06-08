@@ -20,9 +20,17 @@
         
       </div>
       <p class="text-gray-700 mb-8">{{ this.message }}</p>
+
+      <img v-if="this.data.data.billingType == 'PIX' && this.data.data.encodedImage"
+          :src="this.base64" 
+          alt="Pagamento"
+          class="mx-auto"
+        />
+
+
       <a 
         :href="this.data.data.invoiceUrl" 
-        class="inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
+        class="inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-10"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -52,7 +60,14 @@
       message: String,
       user: Object
     },
+    data() {
+      return {
+        base64:''
+      }
+    },
     mounted() {
+
+      this.base64 = 'data:image/jpeg;charset=utf-8;base64,' + this.data.data.encodedImage;
 
       axios.post('/payments', this.data.data)
       .then(function (response) {
@@ -61,7 +76,6 @@
       .catch(function (error) {
         console.log(error);
       });
-
     }
   }
   </script>

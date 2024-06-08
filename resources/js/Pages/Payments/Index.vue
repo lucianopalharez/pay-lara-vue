@@ -9,32 +9,33 @@
         <span>Realizar Pagamento</span>
       </Link>
     </div>
+
     <div class="bg-white rounded-md shadow overflow-x-auto">
       <table class="w-full whitespace-nowrap">
         <tr class="text-left font-bold">
-          <th class="pb-4 pt-6 px-6" colspan="2">Nome</th>
+          <th class="pb-4 pt-6 px-6">Código</th>
           <th class="pb-4 pt-6 px-6">Valor</th>
           <th class="pb-4 pt-6 px-6">Meio Pagamento</th>
           <th class="pb-4 pt-6 px-6">Status</th>
-          <th class="pb-4 pt-6 px-6">Detalhes</th>
+          <th class="pb-4 pt-6 px-6">Pagar</th>
         </tr>
         <tr v-for="payment in payments.data" :key="payment.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
           <td class="border-t">
-            {{ payment.user.name }}
+            {{ payment.invoiceNumber }}
           </td>
           <td class="border-t">
-            {{ payment.value }}
+            R$ {{ payment.value }}
           </td>
           <td class="border-t">
-            {{ payment.billingType }}
+            {{ payment.billingType == 'CREDIT_CARD' ? 'CARTÃO DE CRÉDITO' : payment.billingType }}
           </td>
           <td class="border-t">
             {{ payment.status }}
           </td>
           <td class="w-px border-t">
-            <Link class="flex items-center px-4" :href="`/payment/${payment.id}`" tabindex="-1">
-              <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
-            </Link>
+            <a class="bg-blue-500 text-white flex items-center px-4" target="_blank" :href="payment.invoiceUrl" tabindex="-1">
+              Pagar
+            </a>
           </td>
         </tr>
         <tr v-if="payments.data.length === 0">

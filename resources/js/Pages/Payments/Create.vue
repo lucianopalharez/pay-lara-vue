@@ -12,7 +12,7 @@
 
           <select-input v-model="form.billingType" onselect="" :error="form.errors.billingType" class="pb-8 pr-6 w-full lg:w-9/12" label="Meio Pagamento" @change="changeBillType">
             <option :value="null">Selecione o Meio de Pagamento</option>
-            <option v-for="billingType in billingTypes" :key="billingType" :value="billingType">{{ billingType }}</option>
+            <option v-for="billingType in billingTypes" :key="billingType" :value="billingType">{{ billingType == 'CREDIT_CARD' ? 'CARTÃO DE CRÉDITO' : billingType }}</option>
           </select-input>
 
           <text-input v-model="form.description" :error="form.errors.description" class="pb-8 pr-6 w-full lg:w-full" label="Descrição do pagamento" />
@@ -78,21 +78,21 @@ export default {
     return {
       years: [],
       form: this.$inertia.form({
-        description:'teste',
+        description:'',
         name: this.customer,
-        creditCardNumber: '5184.0197.4037.3151',
-        expiryMonth: '12',
-        expiryYear: '2029',
-        cvv:'159',
+        creditCardNumber: '',
+        expiryMonth: '',
+        expiryYear: '',
+        cvv:'',
         billingType: null,
-        email: 'leonardo@gmail.com',
-        phone: '(64)99278-7569',
-        address: ' rua dois',
-        addressNumber: '0',
+        email: '',
+        phone: '',
+        address: '',
+        addressNumber: '',
         mobilePhone: '',
-        postalCode: '11458-895',
-        cpfCnpj: '202.416.790-01',
-        value:'58',
+        postalCode: '',
+        cpfCnpj: '',
+        value:'',
         userId:'',
         ip:''
       }),
@@ -131,33 +131,7 @@ export default {
         headers: {
           "Accept": "application/json",
         },
-        onSuccess: (page) => {
-          /*const formSave = this.$inertia.form();
-
-          this.form.post('/payments', {
-            headers: {
-              "Accept": "application/json",
-            },
-            onSuccess: (page) => {
-              console.log('this.form',page);
-              console.log('Request was successful:', page.props);
-              console.log('this.errors',this.errors);
-            },
-            onError: (errors) => {
-              console.log('this.form',this.form);
-              console.error('Request failed:', errors);
-            }
-          });*/
-        },
-        onError: (errors) => {
-          console.log('this.form',this.form);
-          console.error('Request failed:', errors);
-        }
       });
-    },
-    formatCpfCnpj(event) {
-      console.log('Tecla pressionada:', event.key);
-      // Aqui você pode adicionar a lógica que desejar
     },
     changeBillType() {
       if (this.form.billingType !== 'CREDIT_CARD') {

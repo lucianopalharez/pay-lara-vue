@@ -4,13 +4,11 @@ namespace App\Services;
 
 use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Http;
-use GuzzleHttp\Client;
-use Carbon\Carbon;
 use App\Enums\BillingTypeEnum;
-use App\Http\Resources\BillPaymentResource;
+use App\Http\Resources\PixPaymentResource;
 use App\Services\GatewayService;
 
-class BillGatewayService extends GatewayService implements PaymentGatewayInterface
+class PixGatewayService extends GatewayService implements PaymentGatewayInterface
 {
     /**
      * Faz requisição no gateway de pagamento para gerar pagamento.
@@ -21,17 +19,21 @@ class BillGatewayService extends GatewayService implements PaymentGatewayInterfa
     public function process(array $body): array
     {       
         try {
-            $processBody = $this->send($body);            
+            $body['format'] = 'ALL';
+            $body['expirationSeconds'] = '600';
+            $body['externalReference'] = $body['ip'];
 
-            $processBodyResource = new BillPaymentResource((object) $processBody);            
+            $processBody = $this->send($body);
 
-            $this->response['data'] = $processBodyResource;       
-            $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar o boleto e concluir o pagamento.';
+            $processBodyResource = new PixPaymentResource((object) $processBody);            
+
+            $this->response['data'] = $processBodyResource;          
+            $this->response['message'] = 'Seu pedido foi processado com sucesso. Faça o pagamento pelo QR code.';
 
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             if ($e->hasResponse()) {
                 $this->response['status'] = $e->getResponse()->getStatusCode();
-                $this->response['message'] = "Erro inesperado!";
+                $this->response['message'] = $e;
             } else {
                 $this->response['message'] = "Erro desconhecido!";
             }
@@ -39,5 +41,4 @@ class BillGatewayService extends GatewayService implements PaymentGatewayInterfa
 
         return $this->response;
     }
-
 }

@@ -32,7 +32,9 @@ class PaymentController extends Controller
                     'value' => $payment->value,
                     'paymentCreated' => $payment->paymentCreated,
                     'dueDate' => $payment->dueDate,
-                    'status' => $payment->status
+                    'status' => $payment->status,
+                    'invoiceNumber' => $payment->invoiceNumber,
+                    'invoiceUrl' => $payment->invoiceUrl,
                 ]),
         ]);
     }
@@ -51,7 +53,7 @@ class PaymentController extends Controller
             
             DB::beginTransaction();
 
-            \Auth::user()->payments()->create($request->except('dueDateFormated'));               
+            \Auth::user()->payments()->create($request->except('dueDateFormated','encodedImage','expirationDate'));               
 
             DB::commit();
         } catch (\Exception $e) {
