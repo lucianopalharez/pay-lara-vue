@@ -12,7 +12,7 @@
       <div class="mb-4 text-left">
         <p><strong>Número do Pedido:</strong> {{ this.data.data.invoiceNumber }}</p>
         <p><strong>Valor:</strong> R$ {{ this.data.data.value }}</p>
-        <p><strong>Meio de Pagamento:</strong> {{ this.data.data.billingType }}</p>
+        <p><strong>Meio de Pagamento:</strong> {{ this.data.data.billingType == 'CREDIT_CARD' ? 'CARTÃO DE CRÉDITO' : this.data.data.billingType }}</p>
         <p v-if="this.data.data.billingType == 'BOLETO'">
           <strong>Data de Vencimento do Boleto:</strong> {{ this.data.data.dueDateFormated }}
         </p>
@@ -37,6 +37,7 @@
   <script>
   import { Head, Link } from '@inertiajs/vue3'
   import Layout from '@/Shared/Layout.vue'
+  import axios from 'axios'
   
   export default {
     components: {
@@ -52,26 +53,15 @@
       user: Object
     },
     mounted() {
-     
-      fetch('/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Outros cabeçalhos, se necessário
-        },
-        body: this.data.data // Seus dados no formato JSON
+
+      axios.post('/payments', this.data.data)
+      .then(function (response) {
+        console.log('axios',response.data)
       })
-      .then(response => {
-        console.log('then',response)
-        if (!response.ok) {
-          
-          throw new Error('Erro ao processar a solicitação');
-        }
-        return response.json(); // Retorna os dados da resposta no formato JSON
-      })
-      .catch(error => {
-        console.error('Ocorreu um erro:', error);
-      }); 
+      .catch(function (error) {
+        console.log(error);
+      });
+
     }
   }
   </script>
