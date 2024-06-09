@@ -24,7 +24,10 @@ class Payment extends Model
         'billingType',
         'value',
         'dueDate',
-        'paymentCreated'
+        'paymentCreated',
+        'billingId',
+        'expirationDate',
+        'encodedImage'
     ];
 
     public function user(): BelongsTo

@@ -105,11 +105,20 @@
 
         axios.post('/payments', this.data.data)
         .then(function (response) {
-          console.log('axios',response.data)
+            console.log('salvo no banco, finalizando..', response.data)
+
+            axios.post('/api/gateway-payments/finally', response.data)
+            .then(function (response) {
+              console.log('finally success',response.data)
+            })
+            .catch(function (error) {
+              console.log('finally error', error);
+            });
         })
         .catch(function (error) {
-          console.log(error);
+          console.log('payments error', error);
         });
+
       }
 
     }

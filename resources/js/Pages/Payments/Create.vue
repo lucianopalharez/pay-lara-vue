@@ -12,7 +12,7 @@
 
           <select-input v-model="form.billingType" onselect="" :error="form.errors.billingType" class="pb-8 pr-6 w-full lg:w-9/12" label="Meio Pagamento" @change="changeBillType">
             <option :value="null">Selecione o Meio de Pagamento</option>
-            <option v-for="billingType in billingTypes" :key="billingType" :value="billingType">{{ billingType == 'CREDIT_CARD' ? 'CARTÃO DE CRÉDITO' : billingType }}</option>
+            <option v-for="billingType in billingTypes" :key="billingType.name" :value="billingType.name">{{ billingType.value }}</option>
           </select-input>
 
           <text-input v-model="form.description" :error="form.errors.description" class="pb-8 pr-6 w-full lg:w-full" label="Descrição do pagamento" />
@@ -127,7 +127,7 @@ export default {
   },
   methods: {
     store() {
-      this.form.post('/api/gateway-payments/generate', {
+      this.form.post('/api/gateway-payments/create', {
         headers: {
           "Accept": "application/json",
         },

@@ -15,7 +15,12 @@ class AsassGatewayService implements PaymentGatewayInterface
     protected $apiToken;
     protected $http;
     protected $pixAddressKey;
-
+    protected $method;
+    protected $finally = [
+        BillingTypeEnum::CREDIT_CARD->name => ['url' => 'payWithCreditCard','status' => true],
+        BillingTypeEnum::PIX->name => ['url' => 'pixQrCode','status' => true],
+        BillingTypeEnum::BOLETO->name => ['url' => '','status' => false],
+    ];
     protected $response = [
         'success' => false,
         'status' => 400,
@@ -35,25 +40,72 @@ class AsassGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Faz requisição no gateway de pagamento para gerar pagamento.
+     * Faz requisição no gateway de pagamento para criar um pagamento.
      *
      * @param  array  $body
      * @return array
      */
-    public function process(array $body): array
+    public function createPayment(array $body): array
     {       
         try {
+            $this->method = 'POST';
+
+            $body['customer'] = $this->getCustomer($body);
+
+            $today = Carbon::now();
+            $body['dueDate'] = $today->addDays(15);
+
+            $body = $this->handleSend($body);
+            $processBody = $this->send($body); 
+
+
+            $processBody = $this->handleResponse($processBody);
+            
+
+            $processBodyResource = new AsassPaymentResource((object) $processBody);
+            
+           
+
+            $this->response['data'] = $processBodyResource;       
+            $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar e concluir o pagamento.';
+            $this->response['status'] = 200;
+            $this->response['success'] = true;
+
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $this->response['error'] = $e;
+            $this->response['message'] = "Desculpe, encontramos um erro inesperado para processar este pagamento. \n\nPor favor tente novamente mais tarde e tenha certeza de que os dados informados estão corretos.";
+        }
+
+        return $this->response;
+    }
+
+    /**
+     * Faz requisição no gateway de pagamento para finalizar um pagamento.
+     *
+     * @param  array  $body
+     * @return array
+     */
+    public function finallyPayment(array $body): array
+    {       
+        try {            
+            if ($this->finally[$body['billingType']]['status'] === false) {
+                $this->response['message'] = 'Não permitido finalizar cobrança para este meio pagamento.';
+
+                return $this->response;
+            }            
+
             $body = $this->handleSend($body);
             $processBody = $this->send($body);         
 
             $processBodyResource = new AsassPaymentResource((object) $processBody);    
 
             $this->response['data'] = $processBodyResource;       
-            $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar e concluir o pagamento.';
+            $this->response['message'] = 'Seu pagamento foi finalizado.';
+            $this->response['status'] = 200;
 
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             $this->response['error'] = $e;
-            $this->response['message'] = "Desculpe, encontramos um erro inesperado para processar este pagamento. \n\nPor favor tente novamente mais tarde e tenha certeza de que os dados informados estão corretos.";
+            $this->response['message'] = "Encontramos um erro inesperado para finalizar este pagamento.";
         }
 
         return $this->response;
@@ -102,29 +154,27 @@ class AsassGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Envia requisição para criar pagamento.
+     * Envia requisição para o gateway de pagamento.
      *
      * @param  array $body
      * @return array
      */
     public function send($body): array 
     {         
-        $body['customer'] = $this->getCustomer($body);
+        $headers = [
+            'headers' => [
+                'accept' => 'application/json',
+                'access_token' => $this->apiToken,
+                'content-type' => 'application/json',
+            ],
+        ];
 
-        $today = Carbon::now();
-        $body['dueDate'] = $today->addDays(15);
+        if ($this->method == 'POST') $headers['body'] = json_encode($body);
 
         $process = $this->http->request(
-            'POST', 
+            $this->method, 
             $this->ApiUrl, 
-            [
-                'body' => json_encode($body),
-                'headers' => [
-                    'accept' => 'application/json',
-                    'access_token' => $this->apiToken,
-                    'content-type' => 'application/json',
-                ],
-            ]
+            $headers
         );
 
         $this->response['success'] = true;
@@ -134,15 +184,17 @@ class AsassGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Trata os dados antes de enviar.
+     * Trata os dados antes de enviar e define o metodo de envio.
      *
-     * @param  array $body
+     * @param  array $body    Dados para envio.
      * @return array
      */
-    public function handleSend($body): array
+    public function handleSend(array $body): array
     {
-        if ($body['billingType'] == BillingTypeEnum::CREDIT_CARD) {
-            $body['billingType'] = 'UNDEFINED';
+        if ($body['billingType'] === BillingTypeEnum::CREDIT_CARD->name) {
+            $this->method = 'POST';
+
+            if (empty($body['billingId']) === true) $body['billingType'] = 'UNDEFINED';
 
             $body['creditCard'] = [
                 'holderName' => $body['name'],
@@ -162,9 +214,31 @@ class AsassGatewayService implements PaymentGatewayInterface
             ];
 
             $body['remoteIp'] = $body['ip'];
+        } elseif ($body['billingType'] === BillingTypeEnum::PIX->name) {
+            $this->method = 'GET';
+        } elseif ($body['billingType'] === BillingTypeEnum::BOLETO->name) {
+            $this->method = 'POST';
         }
 
         return $body;
     }
 
+    /**
+     * Trata a resposta da requisição.
+     *
+     * @param  array $body    Dados da resposta.
+     * @return array
+     */
+    public function handleResponse(array $body): array
+    {
+        if (empty($body['data']) === false) {
+            if (is_array($body['data']) === true) {
+                $body = end($body['data']);
+            } else {
+                $body = $body['data'];
+            }
+        }
+        
+        return $body;
+    }
 }

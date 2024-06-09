@@ -54,7 +54,7 @@ class PaymentController extends Controller
             
             DB::beginTransaction();
 
-            \Auth::user()->payments()->create($request->except('dueDateFormated','expirationDate'));               
+            \Auth::user()->payments()->create($request->except('dueDateFormated','expirationDate','id'));               
 
             DB::commit();
         } catch (\Exception $e) {
@@ -63,7 +63,7 @@ class PaymentController extends Controller
             return response()->json(['error' => $e->getMessage()], 402);
         }  
         
-        return response()->json(['data' => 'pagamento salvo!'], 200);
+        return response()->json(['data' => $request->all()], 200);
     }
 
     public function create()
