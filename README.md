@@ -20,6 +20,14 @@ Entre no container:
 docker exec -it laravel-larapavue-test bash
 ```
 
+```sh
+mkdir bootstrap/cache
+```
+
+```sh
+chmod 777 -R bootstrap storage
+```
+
 Instale as dependencias do PHP:
 
 ```sh
