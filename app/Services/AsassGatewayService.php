@@ -102,7 +102,7 @@ class AsassGatewayService implements PaymentGatewayInterface
             $processBodyResource = new AsassPaymentResource((object) $processBody); 
 
             $this->response['data'] = $processBodyResource;       
-            $this->response['message'] = 'Seu pagamento foi finalizado.';
+            $this->response['message'] = 'Conclua o pagamento.';
             $this->response['status'] = 200;
 
         } catch (\GuzzleHttp\Exception\RequestException $e) {
@@ -230,6 +230,7 @@ class AsassGatewayService implements PaymentGatewayInterface
         switch ($body['billingType']) {
             case BillingTypeEnum::PIX->name:
                 $body['encodedImage'] = $response['encodedImage'];
+                $body['payload'] = $response['payload'];
                 break;   
         }  
 

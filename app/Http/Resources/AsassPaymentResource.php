@@ -37,6 +37,7 @@ class AsassPaymentResource extends JsonResource
             'paymentCreated' => empty($this->dateCreated) === false ? $this->dateCreated : '',
             'dueDateFormated' => empty($this->dueDate) === false ? Carbon::createFromFormat('Y-m-d', $this->dueDate)->format('d/m/Y') : '',
             'encodedImage' => empty($this->encodedImage) === false ? $this->encodedImage : '',
+            'payload' => empty($this->payload) === false ? $this->payload : '',
             'expirationDate' => empty($this->expirationDate) === false ? $this->expirationDate : '',
         ];
     }

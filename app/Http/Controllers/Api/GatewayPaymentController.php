@@ -70,6 +70,7 @@ class GatewayPaymentController extends Controller
             
             $dataResponse['data']['encodedImage'] = empty($response['data']->encodedImage) === false ? $response['data']->encodedImage : '';
             $dataResponse['data']['expirationDate'] = empty($response['data']->expirationDate) === false ? $response['data']->expirationDate : '';
+            $dataResponse['data']['payload'] = empty($response['data']->payload) === false ? $response['data']->payload : '';
 
         } catch (\Exception $e) {
             $response['errors'] = $e->getMessage();
