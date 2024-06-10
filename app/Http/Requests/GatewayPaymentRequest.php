@@ -67,7 +67,7 @@ class GatewayPaymentRequest extends FormRequest
         if ($this->request->get('billingType') === 'CREDIT_CARD') {
             $rules = array_merge($rules, [
                 'creditCardNumber' => ['required', new CreditCardRule],
-                'expiryMonth' => 'required|digits:2',
+                'expiryMonth' => 'required|digits:1',
                 'expiryYear' => 'required|digits:4',
                 'cvv' => 'required|digits:3',
                 'phone' => 'required',
