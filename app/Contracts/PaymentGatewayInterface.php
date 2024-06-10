@@ -8,6 +8,7 @@ interface PaymentGatewayInterface
     public function finallyPayment(array $data);
     public function getCustomer(array $data);
     public function send(array $data);
-    public function handleSend(array $data);    
+    public function handleSend(array $data);
+    public function handleResponse(array $data, array $response);    
 
 }
