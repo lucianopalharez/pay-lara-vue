@@ -15,8 +15,10 @@ use Illuminate\Http\JsonResponse;
 
 class GatewayPaymentController extends Controller
 {
+    public $gateway = 'ASASS';
+
     /**
-     * Gera pagamento no gateway.
+     * Cria uma cobrança no gateway.
      *
      * @param  GatewayPaymentRequest  $request
      * @return InertiaResponse
@@ -29,7 +31,7 @@ class GatewayPaymentController extends Controller
         try {
             $request->validated();
 
-            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => 'ASASS']);
+            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => $this->gateway]);
             $response = $paymentGateway->createPayment($request->all());
 
         } catch (ValidationException $e) {
@@ -51,7 +53,7 @@ class GatewayPaymentController extends Controller
     }
 
     /**
-     * Finaliza o pagamento no gateway.
+     * Finaliza a cobrança no gateway.
      *
      * @param  Request  $request
      * @return JsonResponse
@@ -59,7 +61,7 @@ class GatewayPaymentController extends Controller
     public function finally(Request $request)
     {
         
-        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => 'ASASS']);
+        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => $this->gateway]);
         $response = $paymentGateway->finallyPayment($request->all()); 
 
         return Inertia::render('Payments/Result', $response);

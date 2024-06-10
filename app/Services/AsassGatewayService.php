@@ -35,7 +35,7 @@ class AsassGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Faz requisição no gateway de pagamento para criar um pagamento.
+     * Faz requisição no gateway de pagamento para criar uma cobrança.
      *
      * @param  array  $body
      * @return array
@@ -48,7 +48,7 @@ class AsassGatewayService implements PaymentGatewayInterface
             $today = Carbon::now();
             $body['dueDate'] = $today->addDays(15);
 
-            $body = $this->handleSend($body);
+            $body = $this->handleSendPayment($body);
             $processBody = $this->send($body);            
 
             $processBodyResource = new AsassPaymentResource((object) $processBody);
@@ -67,7 +67,7 @@ class AsassGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Faz requisição no gateway de pagamento para finalizar um pagamento.
+     * Faz requisição no gateway de pagamento para finalizar uma cobrança.
      *
      * @param  array  $body
      * @return array
@@ -79,7 +79,7 @@ class AsassGatewayService implements PaymentGatewayInterface
                 throw new \Exception('Não permitido finalizar cobrança para este meio pagamento.');   
             }  
 
-            $body = $this->handleSend($body);
+            $body = $this->handleSendPayment($body);
 
             switch ($body['billingType']) {
                 case BillingTypeEnum::CREDIT_CARD->name:
@@ -100,7 +100,7 @@ class AsassGatewayService implements PaymentGatewayInterface
             $processBodyResource = new AsassPaymentResource((object) $processBody); 
 
             $this->response['data'] = $processBodyResource;       
-            $this->response['message'] = 'Conclua o pagamento.';
+            $this->response['message'] = 'Conclua o pagamento :';
             $this->response['status'] = 200;
 
         } catch (\Exception $e) {
@@ -188,12 +188,12 @@ class AsassGatewayService implements PaymentGatewayInterface
     }
 
     /**
-     * Trata os dados antes de enviar e define o metodo de envio.
+     * Trata os dados de pagamento antes de enviar.
      *
      * @param  array $body    Dados para envio.
      * @return array
      */
-    public function handleSend(array $body): array
+    public function handleSendPayment(array $body): array
     {
         $this->ApiUrl = env('BILL_API_URL');
 
