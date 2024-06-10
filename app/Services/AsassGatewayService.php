@@ -16,11 +16,6 @@ class AsassGatewayService implements PaymentGatewayInterface
     protected $http;
     protected $pixAddressKey;
     protected $method;
-    protected $finally = [
-        BillingTypeEnum::CREDIT_CARD->name => ['url' => 'payWithCreditCard','status' => true],
-        BillingTypeEnum::PIX->name => ['url' => 'pixQrCode','status' => true],
-        BillingTypeEnum::BOLETO->name => ['url' => '','status' => false],
-    ];
     protected $response = [
         'success' => false,
         'status' => 400,
@@ -48,24 +43,16 @@ class AsassGatewayService implements PaymentGatewayInterface
     public function createPayment(array $body): array
     {       
         try {
-            $this->method = 'POST';
-
             $body['customer'] = $this->getCustomer($body);
 
             $today = Carbon::now();
             $body['dueDate'] = $today->addDays(15);
 
             $body = $this->handleSend($body);
-            $processBody = $this->send($body); 
-
-
-            $processBody = $this->handleResponse($processBody);
-            
+            $processBody = $this->send($body);            
 
             $processBodyResource = new AsassPaymentResource((object) $processBody);
             
-           
-
             $this->response['data'] = $processBodyResource;       
             $this->response['message'] = 'Seu pedido foi processado com sucesso. Clique no botão abaixo para acessar e concluir o pagamento.';
             $this->response['status'] = 200;
@@ -87,17 +74,32 @@ class AsassGatewayService implements PaymentGatewayInterface
      */
     public function finallyPayment(array $body): array
     {       
-        try {            
-            if ($this->finally[$body['billingType']]['status'] === false) {
+        try {
+            if ($body['billingType'] === BillingTypeEnum::BOLETO->name) {
                 $this->response['message'] = 'Não permitido finalizar cobrança para este meio pagamento.';
 
                 return $this->response;
-            }            
+            }  
 
             $body = $this->handleSend($body);
-            $processBody = $this->send($body);         
 
-            $processBodyResource = new AsassPaymentResource((object) $processBody);    
+            switch ($body['billingType']) {
+                case BillingTypeEnum::CREDIT_CARD->name:
+                    $this->method = 'POST';
+                    $this->ApiUrl = $this->ApiUrl . '/' . $body['billingId'] . '/payWithCreditCard';
+                    break;
+
+                case BillingTypeEnum::PIX->name:
+                    $this->method = 'GET';
+                    $this->ApiUrl = $this->ApiUrl . '/' . $body['billingId'] . '/pixQrCode';
+                    break;   
+            }  
+            
+            $processBody = $this->send($body);
+
+            $processBody = $this->handleResponse($body, $processBody);
+            
+            $processBodyResource = new AsassPaymentResource((object) $processBody); 
 
             $this->response['data'] = $processBodyResource;       
             $this->response['message'] = 'Seu pagamento foi finalizado.';
@@ -169,7 +171,7 @@ class AsassGatewayService implements PaymentGatewayInterface
             ],
         ];
 
-        if ($this->method == 'POST') $headers['body'] = json_encode($body);
+        if ($this->method === 'POST') $headers['body'] = json_encode($body);
 
         $process = $this->http->request(
             $this->method, 
@@ -215,7 +217,7 @@ class AsassGatewayService implements PaymentGatewayInterface
 
             $body['remoteIp'] = $body['ip'];
         } elseif ($body['billingType'] === BillingTypeEnum::PIX->name) {
-            $this->method = 'GET';
+            $this->method = 'POST';
         } elseif ($body['billingType'] === BillingTypeEnum::BOLETO->name) {
             $this->method = 'POST';
         }
@@ -223,22 +225,14 @@ class AsassGatewayService implements PaymentGatewayInterface
         return $body;
     }
 
-    /**
-     * Trata a resposta da requisição.
-     *
-     * @param  array $body    Dados da resposta.
-     * @return array
-     */
-    public function handleResponse(array $body): array
+    public function handleResponse($body, $response)
     {
-        if (empty($body['data']) === false) {
-            if (is_array($body['data']) === true) {
-                $body = end($body['data']);
-            } else {
-                $body = $body['data'];
-            }
-        }
-        
+        switch ($body['billingType']) {
+            case BillingTypeEnum::PIX->name:
+                $body['encodedImage'] = $response['encodedImage'];
+                break;   
+        }  
+
         return $body;
     }
 }

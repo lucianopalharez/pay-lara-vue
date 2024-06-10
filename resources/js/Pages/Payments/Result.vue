@@ -21,13 +21,13 @@
       </div>
 
       <p class="text-gray-700 mb-8">{{ this.message }}</p>
-<!--
+
       <img v-if="this.data.data.billingType == 'PIX' && this.data.data.encodedImage"
-          :src="this.base64" 
+          :src="'data:image/jpeg;base64, ' + this.data.data.encodedImage" 
           alt="Pagamento"
           class="mx-auto"
         />
--->
+
 
       <a
         v-if="hasData"
@@ -85,7 +85,27 @@
       }
     },
     methods: {
+      async submitPayment() {
+        try {
+          const response = await axios.post('/payments', this.data.data)
 
+          console.log('response payments', response)
+
+          if (response.data.data) {
+            const form = this.$inertia.form(response.data.data);
+
+            form.post('/api/gateway-payments/finally', {
+              headers: {
+                "Accept": "application/json",
+              },
+            });
+          }
+
+        } catch (error) {
+          this.error = error.response ? error.response.data : error.message;
+          console.error('Request failed:', this.error);
+        }
+      }
     },
     mounted() {
 
@@ -103,21 +123,7 @@
     
         //this.base64 = 'data:image/jpeg;charset=utf-8;base64,' + this.data.data.encodedImage;
 
-        axios.post('/payments', this.data.data)
-        .then(function (response) {
-            console.log('salvo no banco, finalizando..', response.data)
-
-            axios.post('/api/gateway-payments/finally', response.data)
-            .then(function (response) {
-              console.log('finally success',response.data)
-            })
-            .catch(function (error) {
-              console.log('finally error', error);
-            });
-        })
-        .catch(function (error) {
-          console.log('payments error', error);
-        });
+        this.submitPayment();
 
       }
 
