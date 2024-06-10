@@ -12,24 +12,24 @@
     <h1 class="text-2xl font-bold mb-4">{{ this.subtitle }}</h1>
 
     <div class="mb-4 text-left" v-if="hasData">
-      <p><strong>Número do Pedido:</strong> {{ this.data.data.invoiceNumber }}</p>
+      <p v-if="this.data.data.invoiceNumber"><strong>Número do Pedido:</strong> {{ this.data.data.invoiceNumber }}</p>
       <p><strong>Valor:</strong> R$ {{ this.data.data.value }}</p>
       <p><strong>Meio de Pagamento:</strong> {{ this.data.data.billingType == 'CREDIT_CARD' ? 'CARTÃO DE CRÉDITO' : this.data.data.billingType }}</p>
       <p v-if="this.data.data.billingType == 'BOLETO'">
-        <strong>Data de Vencimento do Boleto:</strong> {{ this.data.data.dueDateFormated }}
+        <strong v-if="this.data.data.dueDateFormated">Data de Vencimento do Boleto:</strong> {{ this.data.data.dueDateFormated }}
       </p>
     </div>
 
     <p class="text-gray-700 mb-8">{{ this.message }}</p>
 
-    <img v-if="this.data.data.billingType == 'PIX' && this.data.data.encodedImage"
+    <img v-if="hasData && this.data.data.billingType == 'PIX' && this.data.data.encodedImage"
         :src="'data:image/jpeg;base64, ' + this.data.data.encodedImage" 
         alt="Pagamento"
         class="mx-auto"
       />
 
     <br>
-    <button v-if="this.data.data.billingType == 'PIX' && this.data.data.payload"
+    <button v-if="hasData && this.data.data.billingType == 'PIX' && this.data.data.payload"
       @click="copyText" 
       class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
       ref="copyButton"
@@ -38,7 +38,7 @@
     </button><br>
 
     <a
-      v-if="hasData"
+      v-if="hasData && this.data.data.invoiceUrl"
       :href="this.data.data.invoiceUrl" 
       class="inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-10"
       target="_blank"
@@ -94,7 +94,7 @@
 
           console.log('response payments', response)
 
-          if (response.data.data) {
+          if (response.data.data && this.data.data.billingType != 'BOLETO') {
             const form = this.$inertia.form(response.data.data);
 
             form.post('/api/gateway-payments/finally', {

@@ -15,7 +15,7 @@ class AsassGatewayService implements PaymentGatewayInterface
     protected $apiToken;
     protected $http;
     protected $pixAddressKey;
-    protected $method;
+    protected $method = 'GETd';
     protected $response = [
         'success' => false,
         'status' => 400,
@@ -58,8 +58,8 @@ class AsassGatewayService implements PaymentGatewayInterface
             $this->response['status'] = 200;
             $this->response['success'] = true;
 
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            $this->response['error'] = $e;
+        } catch (\Exception $e) {
+            $this->response['error'] = $e->getMessage();
             $this->response['message'] = "Desculpe, encontramos um erro inesperado para processar este pagamento. \n\nPor favor tente novamente mais tarde e tenha certeza de que os dados informados estão corretos.";
         }
 
@@ -76,9 +76,7 @@ class AsassGatewayService implements PaymentGatewayInterface
     {       
         try {
             if ($body['billingType'] === BillingTypeEnum::BOLETO->name) {
-                $this->response['message'] = 'Não permitido finalizar cobrança para este meio pagamento.';
-
-                return $this->response;
+                throw new \Exception('Não permitido finalizar cobrança para este meio pagamento.');   
             }  
 
             $body = $this->handleSend($body);
@@ -105,9 +103,11 @@ class AsassGatewayService implements PaymentGatewayInterface
             $this->response['message'] = 'Conclua o pagamento.';
             $this->response['status'] = 200;
 
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            $this->response['error'] = $e;
-            $this->response['message'] = "Encontramos um erro inesperado para finalizar este pagamento.";
+        } catch (\Exception $e) {
+            $this->response['data'] = [];
+            $this->response['data']['data'] = $body;
+            $this->response['errors'] = $e->getMessage();
+            $this->response['message'] = 'Erro para finalizar a cobrança! Clique no link de cobrança abaixo para realizar o pagamento!';
         }
 
         return $this->response;
@@ -127,22 +127,16 @@ class AsassGatewayService implements PaymentGatewayInterface
         if (empty($customerId) === true) {            
             $data = [];
             $data['name'] = $body['name'];  
-            $data['cpfCnpj'] = $body['cpfCnpj'];  
+            $data['cpfCnpj'] = $body['cpfCnpj']; 
+            
+            $this->ApiUrl = $this->ApiUrlCustomer;
+            $this->method = 'POST';
 
-            $process = $this->http->request(
-                'POST', 
-                $this->ApiUrlCustomer, 
-                [
-                    'body' => json_encode($data),
-                    'headers' => [
-                        'accept' => 'application/json',
-                        'access_token' => $this->apiToken,
-                        'content-type' => 'application/json',
-                    ],
-                ]
-            );
-
-            $processBody = json_decode((string) $process->getBody(), true);
+            $processBody = $this->send($data);
+            
+            if (empty($processBody['id']) === true) {
+                throw new \Exception('Erro ao cadastrar novo customer');         
+            }
 
             $customerId = $processBody['id'];
 
@@ -158,11 +152,19 @@ class AsassGatewayService implements PaymentGatewayInterface
     /**
      * Envia requisição para o gateway de pagamento.
      *
-     * @param  array $body
+     * @param  array  $body
      * @return array
      */
     public function send($body): array 
-    {         
+    {      
+        if (
+            empty($this->apiToken) === true 
+            || in_array($this->method, array('POST', 'GET')) === false 
+            || empty($this->ApiUrl) === true
+        ) { 
+            throw new \Exception('Dados de envio estao incorretos');
+        }
+
         $headers = [
             'headers' => [
                 'accept' => 'application/json',
@@ -193,6 +195,8 @@ class AsassGatewayService implements PaymentGatewayInterface
      */
     public function handleSend(array $body): array
     {
+        $this->ApiUrl = env('BILL_API_URL');
+
         if ($body['billingType'] === BillingTypeEnum::CREDIT_CARD->name) {
             $this->method = 'POST';
 

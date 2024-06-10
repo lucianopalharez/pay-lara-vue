@@ -58,20 +58,9 @@ class GatewayPaymentController extends Controller
      */
     public function finally(Request $request)
     {
-        $response = [];
-
-        try {
-            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => 'ASASS']);
-            $response = $paymentGateway->finallyPayment($request->all()); 
-            
-        } catch (\Exception $e) {
-            $response['errors'] = $e->getMessage();
-            $response['success'] = true;
-            $response['status'] = 200;
-            $response['message'] = 'Erro para finalizar a cobrança! Clique no link de cobrança abaixo para realizar o pagamento!';
-            $response['data'] = [];
-            $response['data']['data'] = $request->all();
-        }      
+        
+        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => 'ASASS']);
+        $response = $paymentGateway->finallyPayment($request->all()); 
 
         return Inertia::render('Payments/Result', $response);
         
