@@ -225,14 +225,24 @@ class AsassGatewayService implements PaymentGatewayInterface
         return $body;
     }
 
-    public function handleResponse($body, $response)
+    /**
+     * Trata os dados recebidos.
+     *
+     * @param  array $body      Dados para envio.
+     * @param  array $response  Dados recebidos.
+     * @return array
+     */
+    public function handleResponse($body, $response): array
     {
         switch ($body['billingType']) {
             case BillingTypeEnum::PIX->name:
-                $body['encodedImage'] = $response['encodedImage'];
-                $body['payload'] = $response['payload'];
+                $responseNew = $body;
+                $responseNew['encodedImage'] = $response['encodedImage'];
+                $responseNew['payload'] = $response['payload'];
+                $responseNew['expirationDate'] = $response['expirationDate'];
+                $body = $responseNew;
                 break;   
-        }  
+        }
 
         return $body;
     }
