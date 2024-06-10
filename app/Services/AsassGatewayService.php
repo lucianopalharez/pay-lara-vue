@@ -15,7 +15,7 @@ class AsassGatewayService implements PaymentGatewayInterface
     protected $apiToken;
     protected $http;
     protected $pixAddressKey;
-    protected $method = 'GETd';
+    protected $method;
     protected $response = [
         'success' => false,
         'status' => 400,
