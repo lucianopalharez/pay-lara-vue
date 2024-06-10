@@ -10,7 +10,7 @@ use App\Enums\BillingTypeEnum;
 class AsassPaymentResource extends JsonResource
 {
     /**
-     * Transform the resource into an array.
+     * Transforma os dados recebidos da ASASS para os suportados na aplicação.
      *
      * @return array<string, mixed>
      */
