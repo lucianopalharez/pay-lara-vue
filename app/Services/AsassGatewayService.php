@@ -124,10 +124,9 @@ class AsassGatewayService implements PaymentGatewayInterface
         $user = User::find($body['userId']);
         $customerId = $user->customer;
 
-        if (empty($customerId) === true) {
-            
+        if (empty($customerId) === true) {            
             $data = [];
-            $data['nome'] = $body['nome'];  
+            $data['name'] = $body['name'];  
             $data['cpfCnpj'] = $body['cpfCnpj'];  
 
             $process = $this->http->request(
@@ -144,7 +143,8 @@ class AsassGatewayService implements PaymentGatewayInterface
             );
 
             $processBody = json_decode((string) $process->getBody(), true);
-            $customerId = $processBody->id;
+
+            $customerId = $processBody['id'];
 
             $user->customer = $customerId;
             $user->save();
