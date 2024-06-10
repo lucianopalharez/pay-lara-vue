@@ -32,6 +32,8 @@ Gere um novo arquivo .env:
 cp .env.example .env
 ```
 
+Insira seu token de autenticacao da API, na variavel API_TOKEN do arquivo .env 
+
 Gere uma chave da aplicação:
 
 ```sh
