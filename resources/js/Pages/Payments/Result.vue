@@ -45,7 +45,7 @@
       rel="noopener noreferrer"
     >
       <strong>
-        Visualizar cobrança
+        {{ this.message_link }}
       </strong> 
 
     </a>
@@ -69,14 +69,16 @@
     props: {
       success: Boolean,
       status: Number, 
-      data: Object, 
+      data: Object,
       message: String,
-      user: Object
+      user: Object,
+      errors: Object
     },
     data() {
       return {
         title: 'Pedido de Pagamento',
         subtitle: '',
+        message_link: 'Visualizar Cobrança'
       }
     },
     computed: {
@@ -100,6 +102,9 @@
                 "Accept": "application/json",
               },
             });
+
+            console.log('finally data', this.data);
+            console.log('finally message', this.message);
           }
 
         } catch (error) {

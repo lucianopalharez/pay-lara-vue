@@ -54,7 +54,7 @@ class PaymentController extends Controller
             
             DB::beginTransaction();
 
-            \Auth::user()->payments()->create($request->except('dueDateFormated','expirationDate','id'));               
+            \Auth::user()->payments()->create($request->except('dueDateFormated','expirationDate','id','payload'));               
 
             DB::commit();
         } catch (\Exception $e) {
