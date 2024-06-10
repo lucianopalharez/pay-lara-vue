@@ -61,22 +61,15 @@ class GatewayPaymentController extends Controller
         $response = [];
         $status = 400;
 
-        $dataResponse = [];
-        $dataResponse['data'] = $request->all();
-
         try {
             $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => 'ASASS']);
             $response = $paymentGateway->finallyPayment($request->all()); 
             
-            $dataResponse['data']['encodedImage'] = empty($response['data']->encodedImage) === false ? $response['data']->encodedImage : '';
-            $dataResponse['data']['expirationDate'] = empty($response['data']->expirationDate) === false ? $response['data']->expirationDate : '';
-            $dataResponse['data']['payload'] = empty($response['data']->payload) === false ? $response['data']->payload : '';
-
         } catch (\Exception $e) {
             $response['errors'] = $e->getMessage();
             $response['message'] = 'Erro para finalizar a cobrança!';
 
-            return response()->json($dataResponse, $status);
+            return response()->json($response, $status);
         }      
 
         return Inertia::render('Payments/Result', $response);
