@@ -28,6 +28,10 @@
           class="mx-auto"
         />
 
+      <p v-if="this.data.data.billingType == 'PIX' && this.data.data.payload">
+        {{ this.data.data.payload }}
+      </p>
+
 
       <a
         v-if="hasData"
@@ -75,7 +79,6 @@
       return {
         title: 'Pedido de Pagamento',
         subtitle: '',
-        base64:''
       }
     },
     computed: {
@@ -116,12 +119,9 @@
 
         if (this.data.data.billingType == 'CREDIT_CARD' || this.data.data.billingType == 'UNDEFINED') {
           billingType = 'CARTÃO DE CRÉDITO';
-          this.data.data.billingType = 'CREDIT_CARD';
-        }
+          this.data.data.billingType = 'CREDIT_CARD';        }
 
         this.title = 'Pedido Pagamento - ' + billingType;       
-    
-        //this.base64 = 'data:image/jpeg;charset=utf-8;base64,' + this.data.data.encodedImage;
 
         this.submitPayment();
 

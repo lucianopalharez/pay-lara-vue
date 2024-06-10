@@ -230,6 +230,7 @@ class AsassGatewayService implements PaymentGatewayInterface
         switch ($body['billingType']) {
             case BillingTypeEnum::PIX->name:
                 $body['encodedImage'] = $response['encodedImage'];
+                $body['payload'] = $response['payload'];
                 break;   
         }  
 
