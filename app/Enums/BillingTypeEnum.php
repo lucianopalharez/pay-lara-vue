@@ -5,11 +5,19 @@ namespace App\Enums;
 enum BillingTypeEnum: string
 {
     case BOLETO = 'BOLETO';
-    case CREDIT_CARD = 'CREDIT_CARD';
+    case CREDIT_CARD = 'CARTÃO DE CRÉDITO';
     case PIX = 'PIX';
 
-    public static function values(): Array
+    public static function values(): array
     {
-        return array_column(self::cases(), 'value');
+        $cases = (array) self::cases();
+
+        return array_map(function($item) {
+            return [
+                'name' => $item->name,
+                'value' => $item->value
+            ];
+        }, $cases);
     }
+
 };
