@@ -20,7 +20,7 @@
       </p>
     </div>
 
-    <p class="text-gray-700 mb-8">{{ this.message }}</p>
+    <p class="text-gray-700 mb-8">{{ this.data.message }}</p>
 
     <img v-if="hasData && this.data.data.billingType == 'PIX' && this.data.data.encodedImage"
         :src="'data:image/jpeg;base64, ' + this.data.data.encodedImage" 
@@ -134,7 +134,7 @@
     },
     mounted() {
 
-      this.subtitle = this.success == true ? 'Obrigado, ' + this.user.first_name : 'Ops..';
+      this.subtitle = this.data.success == "true" ? 'Obrigado, ' + this.user.first_name : 'Ops..';
       
       if (this.hasData) {
         var billingType = this.data.data.billingType;
@@ -145,7 +145,7 @@
 
         this.title = 'Pedido Pagamento - ' + billingType;       
 
-        this.submitPayment();
+       // this.submitPayment();
 
       }
 

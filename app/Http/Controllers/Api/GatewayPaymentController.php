@@ -21,35 +21,18 @@ class GatewayPaymentController extends Controller
      * Cria uma cobrança no gateway.
      *
      * @param  GatewayPaymentRequest  $request
-     * @return InertiaResponse
+     * @return JsonResponse
      */
-    public function create(GatewayPaymentRequest $request): InertiaResponse
+    public function create(GatewayPaymentRequest $request): JsonResponse
     {
-        $response = [];
-        $page = 'Payments/Result';
-
         try {
-            $request->validated();
-
             $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => $this->gateway]);
             $response = $paymentGateway->createPayment($request->all());
 
-        } catch (ValidationException $e) {
-            
-            $errors = array_map(function($item) {
-                return $item[0];
-            }, $e->errors());
-
-            $page = 'Payments/Create';
-            $response = [
-                'billingTypes' => BillingTypeEnum::values(),
-                'user' => \Auth::user(),
-                'errors' => $errors,
-                'input' => $request->all(),
-            ];
-        }      
-
-        return Inertia::render($page, $response);
+            return response()->json($response, 200);
+        } catch (\Exception $e) {            
+            return response()->json(['error' => $e->getMessage()], 402);
+        }    
     }
 
     /**
@@ -59,13 +42,15 @@ class GatewayPaymentController extends Controller
      * @return JsonResponse
      */
     public function finally(Request $request)
-    {
-        
-        $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => $this->gateway]);
-        $response = $paymentGateway->finallyPayment($request->all()); 
+    {        
+        try {
+            $paymentGateway = app()->make(PaymentGatewayInterface::class, ['gateway' => $this->gateway]);
+            $response = $paymentGateway->finallyPayment($request->all()); 
 
-        return Inertia::render('Payments/Result', $response);
-        
+            return response()->json($response, 200);
+        } catch (\Exception $e) {            
+            return response()->json(['error' => $e->getMessage()], 402);
+        }    
     }
 
 }
