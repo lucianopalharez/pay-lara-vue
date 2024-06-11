@@ -20,7 +20,8 @@ return new class extends Migration
             $table->text('invoiceUrl')->nullable();
             $table->string('externalReference', 250)->nullable();
             $table->longText('description')->nullable();
-            $table->longText('encodedImage')->nullable();            
+            $table->longText('encodedImage')->nullable();  
+            $table->longText('payload')->nullable();           
             $table->string('status', 150)->nullable();
             $table->string('pixTransaction', 250)->nullable();
             $table->string('canBePaidAfterDueDate', 50)->nullable();

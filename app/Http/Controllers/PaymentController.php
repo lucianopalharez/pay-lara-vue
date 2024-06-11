@@ -14,6 +14,7 @@ use App\Enums\BillingTypeEnum;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Http\Requests\GatewayPaymentRequest;
 
 class PaymentController extends Controller
 {
@@ -53,17 +54,19 @@ class PaymentController extends Controller
             $request->validated();
             
             DB::beginTransaction();
-
-            \Auth::user()->payments()->create($request->except('dueDateFormated','expirationDate','id','payload'));               
+   
+            $payment = \Auth::user()->payments()->create($request->except('dueDateFormated','expirationDate','id'));            
 
             DB::commit();
+
+            return response()->json(['id' => $payment->id], 200);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json(['error' => $e->getMessage()], 402);
         }  
         
-        return response()->json(['data' => $request->all()], 200);
     }
 
     public function create()
@@ -72,6 +75,56 @@ class PaymentController extends Controller
             'billingTypes' => BillingTypeEnum::values(),
             'user' => \Auth::user(),
         ]);
-    }   
+    }  
+    
+    /**
+     * Valida o formulario de pagamento.
+     *
+     * @param  GatewayPaymentRequest  $request
+     * @return InertiaResponse
+     */
+    public function validatePayment(GatewayPaymentRequest $request): InertiaResponse
+    {
+        $response = [
+            'billingTypes' => BillingTypeEnum::values(),
+            'user' => \Auth::user(),
+            'errors' => [],
+            'input' => $request->all(),
+            'success' => true
+        ];
+
+        try {
+            $request->validated();
+        } catch (ValidationException $e) {
+            $response['success'] = false;         
+            $response['errors'] = array_map(function($item) {
+                return $item[0];
+            }, $e->errors());
+        }      
+
+        return Inertia::render('Payments/Create', $response);
+    }
+
+    /**
+     * Carrega resultado de pagamento.
+     *
+     * @param  RequestCustom  $request
+     * @return InertiaResponse
+     */
+    public function resultPayment(Payment $payment, RequestCustom $request): InertiaResponse
+    {
+        $response = [
+            'user' => \Auth::user(),
+            'errors' => [],
+            'message' => $request->message,
+            'data' => $request->all(),
+            'success' => $request->success
+        ];
+        
+        $response['data']['data']['encodedImage'] = $payment->encodedImage;
+        $response['data']['data']['payload'] = $payment->payload;
+
+        return Inertia::render('Payments/Result', $response);
+    }
 
 }

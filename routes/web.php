@@ -90,3 +90,11 @@ Route::post('payments', [PaymentController::class, 'store'])
     ->name('payments.store')
     ->middleware('auth');
 
+Route::post('payments/validate', [PaymentController::class, 'validatePayment'])
+    ->name('payments.validate')
+    ->middleware('auth');
+    
+Route::get('payments/result/{payment}', [PaymentController::class, 'resultPayment'])
+    ->name('payments.result')
+    ->middleware('auth');
+

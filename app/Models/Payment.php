@@ -27,7 +27,8 @@ class Payment extends Model
         'paymentCreated',
         'billingId',
         'expirationDate',
-        'encodedImage'
+        'encodedImage',
+        'payload'
     ];
 
     public function user(): BelongsTo

@@ -6,7 +6,7 @@
       <span class="text-indigo-400 font-medium"></span> 
     </h1>
     <div class="max-w-3xl bg-white rounded-md shadow overflow-hidden">
-      <form @submit.prevent="store">
+      <form @submit.prevent="submit">
         <div class="flex flex-wrap -mb-8 -mr-6 p-8">
           <currency-input v-model="form.value" :options="{ currency: 'BRL' }" :error="form.errors.value" class="pb-8 pr-6 w-full lg:w-3/12" label="Valor R$" />
 
@@ -56,6 +56,7 @@ import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 import CurrencyInput from '@/Shared/CurrencyInput.vue'
 import {mask} from 'vue-the-mask'
+import axios from 'axios'
 
 export default {
   directives: {mask},
@@ -71,7 +72,9 @@ export default {
   props: {
     billingTypes: Array,
     user: Object,
-    errors: Object
+    errors: Object,
+    success: Boolean,
+    input: Object
   },
   remember: 'form',
   data() {
@@ -126,10 +129,79 @@ export default {
     });
   },
   methods: {
-    store() {
-      this.form.post('/api/gateway-payments/create', {
+    async createPayment() {
+
+      if (this.success == true) {
+        try {
+          console.log('this.input', this.input);
+
+          //cria cobrança no gateway de pagamento
+          const response = await axios.post('/api/gateway-payments/create', this.input);
+          console.log('response payments', response);
+
+          
+
+          if (response.status == 200) {  
+
+            var dataPage = response;
+
+            var dataSave = response.data.data;                       
+
+            //finaliza a cobrança
+            if (response.data.data.billingType != 'BOLETO') { 
+              console.log('finaliza..', response.data.data);
+
+              const finaliza = await axios.post('/api/gateway-payments/finally', response.data.data);
+              console.log('finaliza response', finaliza);
+
+
+             
+
+              if (finaliza.status == 200) {
+                dataPage.data.message = finaliza.data.message;
+                dataPage.data.success = finaliza.data.success;
+                console.log('finaliza 200')
+               
+                dataSave.encodedImage = finaliza.data.data.encodedImage;
+                dataSave.payload = finaliza.data.data.payload;
+
+                //console.log(' dataPage.data.data.encodedImage',  dataSave.encodedImage)
+              } else {
+                console.log('finaliza error', finaliza)
+              }
+            }            
+            console.log('dataSave',dataSave)
+            //salva cobrança no banco de dados           
+            const create = await axios.post('/payments', dataSave);          
+            console.log('banco create', create);
+
+            if (create.status == 200) {
+              console.log('dataPage result', dataPage)
+              delete dataPage.data.data.encodedImage;
+              delete dataPage.data.data.payload;
+              this.$inertia.visit('/payments/result/' + create.data.id, dataPage);
+            }
+          }
+
+        } catch (error) {
+          this.error = error.response ? error.response.data : error.message;
+          console.error('Request failed:', this.error);
+        }
+      }
+    },
+    submit() {
+      this.form.post('/payments/validate', {
         headers: {
           "Accept": "application/json",
+        },
+        onSuccess: (page) => {
+          // Sucesso
+          console.log('Success:', page);
+          console.log('Formulário enviado com sucesso!');
+          this.createPayment();
+          return;
+
+          
         },
       });
     },
